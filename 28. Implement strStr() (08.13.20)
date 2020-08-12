@@ -1,0 +1,49 @@
+题目：
+Return the index of the first occurrence of needle in haystack, or -1 if needle is not part of haystack.
+
+Example 1:
+
+Input: haystack = "hello", needle = "ll"
+Output: 2
+
+Example 2:
+
+Input: haystack = "aaaaa", needle = "bba"
+Output: -1
+
+Clarification:
+
+What should we return when needle is an empty string? This is a great question to ask during an interview.
+
+For the purpose of this problem, we will return 0 when needle is an empty string. This is consistent to C's strstr() and Java's indexOf().
+
+我的答案：
+class Solution {
+    public int strStr(String haystack, String needle) {
+        int large = haystack.length();
+        int small = needle.length();
+        if (large < small) return -1;
+        if (small == 0) return 0;
+        int threshold = large - small;
+        for (int i = 0; i <= threshold; i++){
+            if (haystack.substring(i, i + small).equals(needle)){
+                return i;
+            }
+        }
+        return -1;
+    }
+}
+
+优化版本：
+public int strStr(String haystack, String needle) {
+  for (int i = 0; ; i++) {
+    for (int j = 0; ; j++) {
+      if (j == needle.length()) return i;
+      if (i + j == haystack.length()) return -1;
+      if (needle.charAt(j) != haystack.charAt(i + j)) break; //这样跳出内层循环，i + 1，指针向后移动一次
+    }
+  }
+}
+
+评价：easy
+注意needle == 0的情况，面试的时候一定要考虑
