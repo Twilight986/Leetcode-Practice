@@ -104,7 +104,30 @@ public int canCompleteCircuit(int[] gas, int[] cost) {
 总
 写题的时候先写出暴力的解法，然后再考虑优化，有时候是一种不错的选择。
 之前自己在博客总结的，更多题解可以在原地址 https://leetcode.wang。
-作者：windliang
 链接：https://leetcode-cn.com/problems/gas-station/solution/xiang-xi-tong-su-de-si-lu-fen-xi-duo-jie-fa-by--30/
-来源：力扣（LeetCode）
-著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+
+
+另外一种思想：
+类比小学数学题目中的游泳池放水进水，怎样能积累到水
+黑色折线图即总油量剩余值，若要满足题目的要求：跑完全程再回到起点，总油量剩余值的任意部分都需要在X轴以上，且跑到终点时：总剩余汽油量 >= 0。
+为了让黑色折线图任意部分都在X轴以上，我们需要向上移动黑色折线图，直到所有点都在X轴或X轴以上。此时，处在X轴的点即为出发点。即黑色折线图的最低值的位置：index = 3。
+链接：https://leetcode-cn.com/problems/gas-station/solution/shi-yong-tu-de-si-xiang-fen-xi-gai-wen-ti-by-cyayc/
+java int 类整数的最大值是 2 的 31 次方 - 1 = 2147483648 - 1 = 2147483647
+可以用 Integer.MAX_VALUE 表示它，即 int value = Integer.MAX_VALUE;
+
+public int canCompleteCircuit(int[] gas, int[] cost) {
+    int len = gas.length;
+    int spare = 0;
+    int minSpare = Integer.MAX_VALUE;
+    int minIndex = 0;
+
+    for (int i = 0; i < len; i++) {
+        spare += gas[i] - cost[i];
+        if (spare < minSpare) {  //找出余量开始增长的点
+            minSpare = spare;
+            minIndex = i;
+        }
+    }
+
+    return spare < 0 ? -1 : (minIndex + 1) % len;
+}
