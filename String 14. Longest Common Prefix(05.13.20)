@@ -36,5 +36,47 @@ class Solution {
 }
 
 评价：easy
-还可以用LCP分治的思想，参考归并排序
-注意考虑字符串长度为1的情况
+1. 可以参考的API：
+indexOf
+    String prefix = strs[0];
+    for (int i = 1; i < strs.length; i++)
+        while (strs[i].indexOf(prefix) != 0) {
+            prefix = prefix.substring(0, prefix.length() - 1);
+            if (prefix.isEmpty()) return "";
+        }
+只要第0个String和后面的String不是从0开始相同就缩短第0个String的长度继续比较，时间复杂度m*n
+
+charAt
+垂直对比查找每个char，直到char不同
+注意要考虑对比的String长度为1的情况，或者说比较到了较短String的最后一个char，此时也要跳出循环
+时间复杂度m*n
+
+2. 比较有意思的算法：
+divide and conquer分治的思想，参考归并排序 + 递归
+将数组从中间分割，直到每一个小组内只有2个字符串
+然后比较两个字符串相同的部分，把它放进新的字符串内，然后将比较后的新字符串两两结合，继续前面的比较
+public String longestCommonPrefix(String[] strs) {
+    if (strs == null || strs.length == 0) return "";    
+        return longestCommonPrefix(strs, 0 , strs.length - 1);
+}
+
+private String longestCommonPrefix(String[] strs, int l, int r) {
+    if (l == r) {  //先分割到1每组只有一个
+        return strs[l];
+    }
+    else {
+        int mid = (l + r)/2;
+        String lcpLeft =   longestCommonPrefix(strs, l , mid);
+        String lcpRight =  longestCommonPrefix(strs, mid + 1,r);
+        return commonPrefix(lcpLeft, lcpRight);
+   }
+}
+
+String commonPrefix(String left,String right) {
+    int min = Math.min(left.length(), right.length());  //将两个字符串合并     
+    for (int i = 0; i < min; i++) {
+        if ( left.charAt(i) != right.charAt(i) )
+            return left.substring(0, i);
+    }
+    return left.substring(0, min);
+}
