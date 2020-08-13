@@ -1,0 +1,35 @@
+题目：
+Given a string s consists of upper/lower-case alphabets and empty space characters ' ', return the length of last word (last word means the last appearing word if we loop from left to right) in the string.
+
+If the last word does not exist, return 0.
+
+Note: A word is defined as a maximal substring consisting of non-space characters only.
+
+Example:
+
+Input: "Hello World"
+Output: 5
+
+
+我的答案：
+class Solution {
+    public int lengthOfLastWord(String s) {
+        int end = s.length() - 1;
+        while(end >= 0 && s.charAt(end) == ' ') end--;
+        if (end < 0) return 0;
+        int start = end;
+        while (start >= 0 && s.charAt(start) != ' ') start--;
+        return end - start;
+    }
+}
+
+评价：easy
+要注意String的最后可能也有空格，还有就是String的长度
+优化算法：（不推荐上来就用）
+class Solution {
+    public int lengthOfLastWord(String s) {
+        s = s.trim();
+        int start = s.lastIndexOf(" ") + 1;
+        return s.substring(start).length();
+    }
+}
