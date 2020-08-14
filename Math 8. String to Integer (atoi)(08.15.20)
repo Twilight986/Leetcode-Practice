@@ -1,0 +1,131 @@
+题目：
+Implement atoi which converts a string to an integer.
+
+The function first discards as many whitespace characters as necessary until the first non-whitespace character is found. Then, starting from this character, takes an optional initial plus or minus sign followed by as many numerical digits as possible, and interprets them as a numerical value.
+
+The string can contain additional characters after those that form the integral number, which are ignored and have no effect on the behavior of this function.
+
+If the first sequence of non-whitespace characters in str is not a valid integral number, or if no such sequence exists because either str is empty or it contains only whitespace characters, no conversion is performed.
+
+If no valid conversion could be performed, a zero value is returned.
+
+Note:
+
+    Only the space character ' ' is considered as whitespace character.
+    Assume we are dealing with an environment which could only store integers within the 32-bit signed integer range: [−231,  231 − 1]. If the numerical value is out of the range of representable values, INT_MAX (231 − 1) or INT_MIN (−231) is returned.
+
+Example 1:
+
+Input: "42"
+Output: 42
+
+Example 2:
+
+Input: "   -42"
+Output: -42
+Explanation: The first non-whitespace character is '-', which is the minus sign.
+             Then take as many numerical digits as possible, which gets 42.
+
+Example 3:
+
+Input: "4193 with words"
+Output: 4193
+Explanation: Conversion stops at digit '3' as the next character is not a numerical digit.
+
+Example 4:
+
+Input: "words and 987"
+Output: 0
+Explanation: The first non-whitespace character is 'w', which is not a numerical 
+             digit or a +/- sign. Therefore no valid conversion could be performed.
+
+Example 5:
+
+Input: "-91283472332"
+Output: -2147483648
+Explanation: The number "-91283472332" is out of the range of a 32-bit signed integer.
+             Thefore INT_MIN (−231) is returned.
+
+
+我的答案：
+class Solution {
+    public int myAtoi(String str) {
+        int index = 0, n = str.length();
+        while (index < n && str.charAt(index) == ' ') index++;
+        if (index == n) return 0;
+        int negative = 1;
+        if (str.charAt(index) == '-'){
+            negative = -1;
+            index++;
+        }else if (str.charAt(index) == '+') {
+            index++;
+        }else if (!Character.isDigit(str.charAt(index))){
+            return 0;
+        }
+        int atoi = 0;
+        while (index < n && Character.isDigit(str.charAt(index))){   
+            int digit = str.charAt(index) - '0';
+            if (negative == 1 && (atoi > Integer.MAX_VALUE / 10 || (atoi == Integer.MAX_VALUE / 10 && digit > 7))) return Integer.MAX_VALUE;
+            if (negative == -1 && (atoi > -(Integer.MIN_VALUE / 10) || (atoi == -(Integer.MIN_VALUE / 10) && digit > 8))) return Integer.MIN_VALUE;
+            atoi = atoi * 10 + digit;
+            index++;
+        }
+        
+        return atoi * negative;
+    }
+}
+
+评价：medium
+一. 正常遍历：
+
+    去掉前导空格
+    再是处理正负号
+    识别数字，注意越界情况。
+
+这道题目如果只是简单地字符串转整数的话，就是简单地 ans = ans * 10 + digit。
+但是注意这道题目可能会超过integer的最大表示！
+也就是说会在某一步 ans * 10 + digit > Integer.MAX_VALUE。
+ans*10 和 +digit 都有可能越界，
+
+不过我的忠告是，等真正工作以后，尽可能地调用jdk的方法，比如Character.isDigit。如果没有你想要的api，也要尽量使用guava，apache common等常见的utils包，尽量不要自己造轮子，一是这样减少出错的可能，二是比较无脑，保护脑细胞~
+
+作者：sweetiee
+链接：https://leetcode-cn.com/problems/string-to-integer-atoi/solution/java-zi-fu-chuan-zhuan-zheng-shu-hao-dong-by-sweet/
+
+二. 有限状态机
+class Automata{
+    private int state=0;
+    private int[][] table={{0,1,2,3},{3,3,2,3},{3,3,2,3},{3,3,3,3}};
+    long ans=0;
+    int sign=1;
+
+    public int gets(char c){
+        if(c==' ')return 0;
+        if(c=='+'||c=='-')return 1;
+        if(Character.isDigit(c))return 2;
+        return 3;
+    }
+
+    public void get(char c){
+        state=table[state][gets(c)];
+        if(state==2){
+            ans=ans*10+(c-'0');
+            ans= sign==1 ? Math.min(ans,Integer.MAX_VALUE):Math.min(ans,-(long)Integer.MIN_VALUE);
+        }
+        if(state==1&&c=='-')sign=-1;
+    }
+
+}
+
+class Solution {
+    public int myAtoi(String str) {
+        Automata auto=new Automata();
+        char[] temp=str.toCharArray();
+        for(char c:temp)
+        auto.get(c);
+
+        return auto.sign*(int)auto.ans;
+    }
+}
+在我理解正常遍历的方法只是适用于分支讨论较少的情况，不然代码就会显得很冗余，也很难思考。而有限状态机的关键在于我们的程序在每个时刻有一个状态 s，每次从序列中输入一个字符 c，并根据字符 c 转移到下一个状态 s'。这样，我们只需要建立一个覆盖所有情况的从 s 与 c 映射到 s' 的表格即可解决题目中的问题
+在我理解看来，这种方法这要确定好了状态就可以解决复杂的字符串问题，无论是在题目改成要求找多组数字或者是加入其他判断条件
