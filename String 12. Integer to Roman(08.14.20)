@@ -1,4 +1,4 @@
-题目：
+#题目：
 Roman numerals are represented by seven different symbols: I, V, X, L, C, D and M.
 
 Symbol       Value
@@ -66,5 +66,11 @@ class Solution {
     }
 }
 
-评价：medium
+#评价：medium
 贪心算法
+我的理解是，从最大的数开始对应，知道找到可以适用的数
+比如1994，最大的数是1000，那么就先从1000开始对应
+1994-1000=994   M
+994-900=94      CM
+94-90=4         XC
+4               IV
