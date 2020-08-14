@@ -89,3 +89,38 @@ class Solution {
 评价：medium
 中文翻译
 p_end永远不可能 == n - 1
+双指针，一次遍历，常数空间
+
+方法一有两个缺点：
+
+    是两次遍历的解决方法。
+    消耗线性空间。
+
+我们能否实现一个只有一次遍历和消耗常数空间的解决方法呢？
+
+其思想是在每个字符串上使用两个指针，跟踪每个数组的开始和结束。
+
+这样，可以并行地沿着两个字符串移动，检索并比较相应的块。一旦两个字符串都被解析，比较也就完成了。
+
+算法：
+
+首先，我们定义了一个名为 get_next_chunk(version, n, p) 的函数，用于检索字符串中的下一个块。这个函数有三个参数：输入字符串 version，它的长度 n，以及指针 p 为要检索块的第一个字符。它在指针 p 和下一个点之间返回一个整数块。为了帮助迭代，返回的是下一个快的第一个字符的指针。下面是如何使用此函数解决问题的方法：
+
+    指针 p1 和 p2 分别指向 version1 和 version2 的起始位置：p1=p2=0。
+    并行遍历两个字符串。当 p1 < n1 or p2 < n2：
+        使用 get_next_chunk 函数获取 version1 和 version2 的下一个块 i1 和 i2。
+        比较 i1 和 i2。如果不相同，则返回 1 或 -1。
+    如果到了这里，说明版本号相同，则返回 0。
+
+下面实现 get_next_chunk(version, n, p) 函数：
+
+    块的开头由指针 p 标记。如果 p 设置为字符串的结尾，则字符串解析完成。若要继续比较，则在添加 .0 返回。
+    如果 p 不在字符串的末尾，则沿字符串移动指针 p_end 以查找块的结尾。
+    返回块 version.substring(p, p_end)。
+ 复杂度分析
+
+    时间复杂度：O(max⁡(N,M))\mathcal{O}(\max(N, M))O(max(N,M))。其中 NNN 和 MMM 指的是输入字符串的长度。
+    空间复杂度：O(1)\mathcal{O}(1)O(1)，没有使用额外的数据结构
+
+作者：LeetCode
+链接：https://leetcode-cn.com/problems/compare-version-numbers/solution/bi-jiao-ban-ben-hao-by-leetcode/
