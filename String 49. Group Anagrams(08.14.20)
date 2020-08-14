@@ -44,3 +44,11 @@ class Solution {
 
 Runtime: 11 ms, faster than 60.72% of Java online submissions for Group Anagrams.
 Memory Usage: 42.7 MB, less than 69.55% of Java online submissions for Group Anagrams.
+
+评价：
+1. 用hashmap存储每个单词的信息，key对应的是出现的字母的ascii码的一个排列（实际上是，出现某个字母一次，相应位置就count一次，通过ascii码计算字母在数组中的位置），没有出现顺序的影响，也不会说4个字母不相同但两两加在一起结果正好相同的尴尬情况，这样只要出现的字母相同就能对应放到一个value(value是一个List，可以随时加入新的元素，即key相同时add新的String)里面
+2. 这样我们就确定了hashmap两组数据的类型，value用来存储String[]中的字符串，所以List是String类型，（其实我认为把key设置成<Integer[]>类型也不一定不行）key用来存储对应String的ascii码，注意我们要将每个字母对应的ascii码放在它所对应的26个字母的相应位置，可以用[]来存储，然后再把它放进StringBuilder中，好转换也比较好控制类型，另外，用String也好判断原本是否存在，所以key的数据类型为String
+3. count初始化为[26]，我们在每次循环（即处理每个独立的String元素）时，都将count设定为0一次，这样就省去了空间
+4. 我们要比较ascii码，就要把字母从String转化为char类型，每个单词就是charArray，这样方便对每个单词进行循环计数，得到每个字母出现的次数并计数
+5. 因为要计数，所以count是int类型的，接下来放到StringBuilder中，用toString就可以转换并比较
+6. 用put将key放进去，注意放之前要判断map里面是不是已经有过相同的key了，如果没有，创建相应的key和AttryList，如果有，就add到原本的ArrayList中
