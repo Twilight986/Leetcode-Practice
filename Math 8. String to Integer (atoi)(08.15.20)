@@ -59,7 +59,7 @@ class Solution {
             index++;
         }else if (str.charAt(index) == '+') {
             index++;
-        }else if (!Character.isDigit(str.charAt(index))){
+        }else if (!Character.isDigit(str.charAt(index))){  //一定要先做符号判断再判断是不是数字
             return 0;
         }
         int atoi = 0;
