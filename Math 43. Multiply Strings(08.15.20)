@@ -19,6 +19,30 @@ Note:
     You must not use any built-in BigInteger library or convert the inputs to integer directly.
 
 
+我的答案：
+class Solution {
+    public String multiply(String num1, String num2) {
+        int n1 = num1.length(), n2 = num2.length();
+        int[] arr = new int[n1 + n2]; //用[10 ^ (x - 1), 10 ^ x - 1]验证乘积的位数，发现最大就是n1 + n2
+        for (int i = n1 - 1; i >= 0; i--){
+            for (int j = n2 - 1; j >= 0; j--){
+                int dig = (num1.charAt(i) - '0') * (num2.charAt(j) - '0');
+                dig += arr[i + j + 1];  //如果第j + 1次循环的结果是两位数，那么要把上次位数中的十位数拿出来先加上，并且不能用arr[i + j + 1] += dig % 10，这个自己试一下就知道了，是错的
+                arr[i + j] += dig / 10;
+                arr[i + j + 1] = dig % 10; 
+            }
+        }
+        int i = 0;
+        StringBuilder result = new StringBuilder();
+        while (i < arr.length - 1 && arr[i] == 0){ //arr.length - 1是防止乘积的结果就是 "0"
+            i++;
+        }
+        for ( ; i < arr.length; i++){
+            result.append(arr[i]);
+        }
+        return result.toString();
+    }
+}
 参考答案：
 方法一：做加法
 
