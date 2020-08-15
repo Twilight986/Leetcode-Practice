@@ -1,0 +1,87 @@
+Given a binary tree, return the level order traversal of its nodes' values. (ie, from left to right, level by level).
+
+For example:
+Given binary tree [3,9,20,null,null,15,7],
+
+    3
+   / \
+  9  20
+    /  \
+   15   7
+
+return its level order traversal as:
+
+[
+  [3],
+  [9,20],
+  [15,7]
+]
+
+
+我的答案：
+public class TreeNode {
+    int val;
+    TreeNode left;
+    TreeNode right;
+    TreeNode() {}
+    TreeNode(int val) { this.val = val; }
+    TreeNode(int val, TreeNode left, TreeNode right) {
+        this.val = val;
+        this.left = left;
+        this.right = right;
+    }
+}
+
+class Solution {
+    public List<List<Integer>> levelOrder(TreeNode root) {
+        List<List<Integer>> result = new ArrayList<>();
+        LinkedList<TreeNode> stack = new LinkedList<>();
+        if (root != null){
+            stack.add(root);
+        }else{
+            return result;
+        }
+        while(!stack.isEmpty()){
+            int n = stack.size();
+            List<Integer> level = new ArrayList<>();
+            for (int i = 0; i < n; i++){
+                TreeNode node = stack.poll();
+                level.add(node.val);
+                if (node.left != null){
+                    stack.add(node.left);
+                }
+                if (node.right != null){
+                    stack.add(node.right);
+                }
+            }
+            result.add(level);
+        }
+        return result;
+    }
+}
+
+评价：medium
+
+参考讲解：
+什么是层序遍历呢？简单来说，层序遍历就是把二叉树分层，然后每一层从左到右遍历：
+
+二叉树的层序遍历
+
+乍一看来，这个遍历顺序和 BFS 是一样的，我们可以直接用 BFS 得出层序遍历结果。然而，层序遍历要求的输入结果和 BFS 是不同的。层序遍历要求我们区分每一层，也就是返回一个二维数组。而 BFS 的遍历结果是一个一维数组，无法区分每一层。
+
+BFS 遍历与层序遍历的输出结果不同
+
+那么，怎么给 BFS 遍历的结果分层呢？我们首先来观察一下 BFS 遍历的过程中，结点进队列和出队列的过程：
+
+BFS 遍历的过程（动图）
+
+截取 BFS 遍历过程中的某个时刻：
+
+BFS 遍历中某个时刻队列的状态
+
+可以看到，此时队列中的结点是 3、4、5，分别来自第 1 层和第 2 层。这个时候，第 1 层的结点还没出完，第 2 层的结点就进来了，而且两层的结点在队列中紧挨在一起，我们无法区分队列中的结点来自哪一层。
+
+因此，我们需要稍微修改一下代码，在每一层遍历开始前，先记录队列中的结点数量 nnn（也就是这一层的结点数量），然后一口气处理完这一层的 nnn 个结点。
+
+作者：nettee
+链接：https://leetcode-cn.com/problems/binary-tree-level-order-traversal/solution/bfs-de-shi-yong-chang-jing-zong-jie-ceng-xu-bian-l/
