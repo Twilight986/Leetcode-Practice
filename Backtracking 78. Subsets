@@ -1,0 +1,149 @@
+Given a set of distinct integers, nums, return all possible subsets (the power set).
+
+Note: The solution set must not contain duplicate subsets.
+
+Example:
+
+Input: nums = [1,2,3]
+Output:
+[
+  [3],
+  [1],
+  [2],
+  [1,2,3],
+  [1,3],
+  [2,3],
+  [1,2],
+  []
+]
+
+
+
+我的答案：
+class Solution {
+    int n, k;
+    List<List<Integer>> result = new ArrayList<>();
+    
+    public void getSubSets(int index, ArrayList<Integer> curr, int[] nums) {
+        if (curr.size() == k){
+            result.add(new ArrayList(curr));
+        }
+        for (int i = index; i < n; i++){
+            curr.add(nums[i]);
+            getSubSets(i + 1, curr, nums);
+            curr.remove(curr.size() - 1);
+        }
+    }
+    
+    public List<List<Integer>> subsets(int[] nums) {
+        n = nums.length;
+        for (k = 0; k <= n; k++){
+            getSubSets(0, new ArrayList<Integer>(), nums);
+        }
+        return result;
+    }
+}
+
+class Solution {
+    public List<List<Integer>> subsets(int[] nums) {
+        List<List<Integer>> result = new ArrayList<>();
+        int n = nums.length;
+        for (int i = (int)Math.pow(2, n); i < (int)Math.pow(2, n + 1); i++){
+            String bit = Integer.toBinaryString(i).substring(1);
+            List<Integer> curr = new ArrayList<>();
+            for (int j = 0; j < n; j++){
+                if (bit.charAt(j) == '1'){
+                    curr.add(nums[j]);
+                }
+            }
+            result.add(curr);
+        }
+        return result;
+    }
+}
+
+评价：medium
+注意，空数组也算
+
+参考答案：
+方法一：递归
+
+思路
+
+开始假设输出子集为空，每一步都向子集添加新的整数，并生成新的子集。
+class Solution {
+  public List<List<Integer>> subsets(int[] nums) {
+    List<List<Integer>> output = new ArrayList();
+    output.add(new ArrayList<Integer>());
+
+    for (int num : nums) {
+      List<List<Integer>> newSubsets = new ArrayList();
+      for (List<Integer> curr : output) {
+        newSubsets.add(new ArrayList<Integer>(curr){{add(num);}});
+      }
+      for (List<Integer> curr : newSubsets) {
+        output.add(curr);
+      }
+    }
+    return output;
+  }
+}
+
+复杂度分析
+
+    时间复杂度：O(N×2N)\mathcal{O}(N \times 2^N)O(N×2N)，生成所有子集，并复制到输出结果中。
+
+    空间复杂度：O(N×2N)\mathcal{O}(N \times 2^N)O(N×2N)，这是子集的数量。
+        对于给定的任意元素，它在子集中有两种情况，存在或者不存在（对应二进制中的 0 和 1）。因此，NNN 个数字共有 2N2^N2N 个子集。
+
+方法二：回溯
+
+算法
+
+    幂集是所有长度从 0 到 n 所有子集的组合。
+
+根据定义，该问题可以看作是从序列中生成幂集。
+
+遍历 子集长度，通过 回溯 生成所有给定长度的子集。
+算法
+
+定义一个回溯方法 backtrack(first, curr)，第一个参数为索引 first，第二个参数为当前子集 curr。
+
+    如果当前子集构造完成，将它添加到输出集合中。
+
+    否则，从 first 到 n 遍历索引 i。
+
+        将整数 nums[i] 添加到当前子集 curr。
+
+        继续向子集中添加整数：backtrack(i + 1, curr)。
+
+        从 curr 中删除 nums[i] 进行回溯。 //这句啥意思？？？
+
+复杂度分析
+
+    时间复杂度：O(N×2N)\mathcal{O}(N \times 2^N)O(N×2N)，生成所有子集，并复制到输出集合中。
+
+    空间复杂度：O(N×2N)\mathcal{O}(N \times 2^N)O(N×2N)，存储所有子集，共 nnn 个元素，每个元素都有可能存在或者不存在。
+
+方法三：字典排序（二进制排序） 子集
+
+思路
+
+该方法思路来自于 Donald E. Knuth。
+
+    将每个子集映射到长度为 n 的位掩码中，其中第 i 位掩码 nums[i] 为 1，表示第 i 个元素在子集中；如果第 i 位掩码 nums[i] 为 0，表示第 i 个元素不在子集中。
+例如，位掩码 0..00（全 0）表示空子集，位掩码 1..11（全 1）表示输入数组 nums。
+
+因此要生成所有子集，只需要生成从 0..00 到 1..11 的所有 n 位掩码。
+
+乍看起来生成二进制数很简单，但如何处理左边填充 0 是一个问题。因为必须生成固定长度的位掩码：例如 001，而不是 1。因此可以使用一些位操作技巧：
+int nthBit = 1 << n;
+for (int i = 0; i < (int)Math.pow(2, n); ++i) {
+    // generate bitmask, from 0..00 to 1..11
+    String bitmask = Integer.toBinaryString(i | nthBit).substring(1);
+    
+or
+
+for (int i = (int)Math.pow(2, n); i < (int)Math.pow(2, n + 1); ++i) {
+  // generate bitmask, from 0..00 to 1..11
+  String bitmask = Integer.toBinaryString(i).substring(1);
