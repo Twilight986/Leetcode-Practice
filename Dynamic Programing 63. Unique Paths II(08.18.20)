@@ -1,0 +1,116 @@
+A robot is located at the top-left corner of a m x n grid (marked 'Start' in the diagram below).
+
+The robot can only move either down or right at any point in time. The robot is trying to reach the bottom-right corner of the grid (marked 'Finish' in the diagram below).
+
+Now consider if some obstacles are added to the grids. How many unique paths would there be?
+
+An obstacle and empty space is marked as 1 and 0 respectively in the grid.
+
+Note: m and n will be at most 100.
+
+Example 1:
+
+Input:
+[
+  [0,0,0],
+  [0,1,0],
+  [0,0,0]
+]
+Output: 2
+Explanation:
+There is one obstacle in the middle of the 3x3 grid above.
+There are two ways to reach the bottom-right corner:
+1. Right -> Right -> Down -> Down
+2. Down -> Down -> Right -> Right
+
+
+我的答案：
+class Solution {
+    public int uniquePathsWithObstacles(int[][] obstacleGrid) {
+        if (obstacleGrid == null || obstacleGrid.length == 0) return 0;
+        int m = obstacleGrid.length, n = obstacleGrid[0].length;
+        int path[][] = new int[m][n];
+        for (int i = 0; i < m && obstacleGrid[i][0] != 1; i++){
+            path[i][0] = 1;
+        }
+        for (int j = 0; j < n && obstacleGrid[0][j] != 1; j++){
+            path[0][j] = 1;
+        }
+        for (int i = 1; i < m; i++){
+            for (int j = 1; j < n; j++){
+                if(obstacleGrid[i][j] != 1) {
+                    path[i][j] = path[i - 1][j] + path[i][j - 1];
+                }
+            }
+        }
+        return path[m - 1][n - 1];
+    }
+}
+
+评价：medium
+
+参考讲解：
+一、题目分析
+递归思路：
+
+假设我们定义到达右下角的走法数为 f(m,n)f(m, n)f(m,n), 因为右下角只能由它上方或者左方的格子走过去，因此可以很容易的写出递归求解式，即 f(m,n)=f(m−1,n)+f(m,n−1)f(m, n) = f(m - 1, n) + f(m, n - 1)f(m,n)=f(m−1,n)+f(m,n−1)，最后加上递归终止条件，SO EASY 看起来大功告成啦！
+
+然而事情并木有结束～ 因为这样自底向上的递归会存在大量的重复计算，所以我们将其改写为在二维数组中自顶向下的递推即可，即 dp[i,j]=dp[i−1,j]+dp[i,j−1]dp[i, j] = dp[i - 1, j] + dp[i, j - 1]dp[i,j]=dp[i−1,j]+dp[i,j−1]。
+1、状态定义：
+
+dp[i][j]dp[i][j]dp[i][j] 表示走到格子 (i,j)(i, j)(i,j) 的方法数。
+2、状态转移：
+
+如果网格 (i,j)(i, j)(i,j) 上有障碍物，则 dp[i][j]dp[i][j]dp[i][j] 值为 000，表示走到该格子的方法数为 000；
+否则网格 (i,j)(i, j)(i,j) 可以从网格 (i−1,j)(i - 1, j)(i−1,j) 或者 网格 (i,j−1)(i, j - 1)(i,j−1) 走过来，因此走到该格子的方法数为走到网格 (i−1,j)(i - 1, j)(i−1,j) 和网格 (i,j−1)(i, j - 1)(i,j−1) 的方法数之和，即 dp[i,j]=dp[i−1,j]+dp[i,j−1]dp[i, j] = dp[i - 1, j] + dp[i, j - 1]dp[i,j]=dp[i−1,j]+dp[i,j−1]。
+
+状态转移方程如下：
+
+dp[i][j]={dp[i−1,j]+dp[i,j−1](i,j)上无障碍物0(i,j)上有障碍物 dp[i][j] = \begin{cases} dp[i - 1, j] + dp[i, j - 1] & & {(i, j) 上无障碍物} \\ 0 & & {(i, j) 上有障碍物} \end{cases} dp[i][j]={dp[i−1,j]+dp[i,j−1]0​​(i,j)上无障碍物(i,j)上有障碍物​
+3、初始条件
+
+第 1 列的格子只有从其上边格子走过去这一种走法，因此初始化 dp[i][0] 值为 1，存在障碍物时为 0；
+
+第 1 行的格子只有从其左边格子走过去这一种走法，因此初始化 dp[0][j] 值为 1，存在障碍物时为 0。
+
+int m = obstacleGrid.length, n = obstacleGrid[0].length;
+int[][] dp = new int[m][n];
+for (int i = 0; i < m && obstacleGrid[i][0] == 0; i++) {
+    dp[i][0] = 1;
+}
+for (int j = 0; j < n && obstacleGrid[0][j] == 0; j++) {
+    dp[0][j] = 1;
+}
+
+二、具体实现
+
+class Solution {
+    public int uniquePathsWithObstacles(int[][] obstacleGrid) {
+        if (obstacleGrid == null || obstacleGrid.length == 0) {
+            return 0;
+        }
+        
+        // 定义 dp 数组并初始化第 1 行和第 1 列。
+        int m = obstacleGrid.length, n = obstacleGrid[0].length;
+        int[][] dp = new int[m][n];
+        for (int i = 0; i < m && obstacleGrid[i][0] == 0; i++) {
+            dp[i][0] = 1;
+        }
+        for (int j = 0; j < n && obstacleGrid[0][j] == 0; j++) {
+            dp[0][j] = 1;
+        }
+
+        // 根据状态转移方程 dp[i][j] = dp[i - 1][j] + dp[i][j - 1] 进行递推。
+        for (int i = 1; i < m; i++) {
+            for (int j = 1; j < n; j++) {
+                if (obstacleGrid[i][j] == 0) {
+                    dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+                }
+            }
+        }
+        return dp[m - 1][n - 1];
+    }
+}
+
+作者：sweetiee
+链接：https://leetcode-cn.com/problems/unique-paths-ii/solution/jian-dan-dpbi-xu-miao-dong-by-sweetiee/
