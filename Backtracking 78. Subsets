@@ -221,7 +221,7 @@ private void getAns(int[] nums, int start, ArrayList<Integer> temp, List<List<In
         }
         temp.add(nums[i]);
         getAns(nums, i + 1, temp, ans);
-        temp.remove(temp.size() - 1);
+        temp.remove(temp.size() - 1); //更新temp里面的元素，方便下次使用
     }
 }
 解法二 迭代法
@@ -269,12 +269,12 @@ public List<List<Integer>> subsetsWithDup(int[] nums) {
                 continue;
             }
             List<Integer> tmp = new ArrayList<>(list);
-            tmp.add(nums[i]); // 加入新增数字
+            tmp.add(nums[i]); // 在原来的子数组里面加入新增数字
             ans_tmp.add(tmp);
         }
 
-        start = ans.size(); //更新新解的开始位置
-        ans.addAll(ans_tmp);
+        start = ans.size(); //更新新解的开始位置，记录的是上一次循环时ans的大小
+        ans.addAll(ans_tmp);  //把新数组加入到旧数组中
     }
     return ans;
 }
