@@ -1,0 +1,134 @@
+A robot is located at the top-left corner of a m x n grid (marked 'Start' in the diagram below).
+
+The robot can only move either down or right at any point in time. The robot is trying to reach the bottom-right corner of the grid (marked 'Finish' in the diagram below).
+
+How many possible unique paths are there?
+
+
+Above is a 7 x 3 grid. How many possible unique paths are there?
+
+ 
+
+Example 1:
+
+Input: m = 3, n = 2
+Output: 3
+Explanation:
+From the top-left corner, there are a total of 3 ways to reach the bottom-right corner:
+1. Right -> Right -> Down
+2. Right -> Down -> Right
+3. Down -> Right -> Right
+
+Example 2:
+
+Input: m = 7, n = 3
+Output: 28
+
+ 
+
+Constraints:
+
+    1 <= m, n <= 100
+    It's guaranteed that the answer will be less than or equal to 2 * 10 ^ 9.
+
+
+我的答案：
+class Solution {
+    public int uniquePaths(int m, int n) {
+        int path[][] = new int[m][n];
+        for (int i = 0; i < m; i++){
+            path[i][0] = 1;
+        }
+        for (int j = 0; j < n; j++){
+            path[0][j] = 1;
+        }
+        for (int i = 1; i < m; i++){
+            for (int j = 1; j < n; j++){
+                path[i][j] = path[i - 1][j] + path[i][j - 1];
+            }
+        }
+        return path[m - 1][n - 1];
+    }
+}
+
+评价：medium
+思路一：排列组合
+
+因为机器到底右下角，向下几步，向右几步都是固定的，
+
+比如，m=3, n=2，我们只要向下 1 步，向右 2 步就一定能到达终点。
+
+所以有 Cm+n−2m−1C_{m+n-2}^{m-1}Cm+n−2m−1​
+
+def uniquePaths(self, m: int, n: int) -> int:
+        return int(math.factorial(m+n-2)/math.factorial(m-1)/math.factorial(n-1))
+
+思路二：动态规划
+
+我们令 dp[i][j] 是到达 i, j 最多路径
+
+动态方程：dp[i][j] = dp[i-1][j] + dp[i][j-1]
+
+注意，对于第一行 dp[0][j]，或者第一列 dp[i][0]，由于都是在边界，所以只能为 1
+
+时间复杂度：O(m∗n)O(m*n)O(m∗n)
+
+空间复杂度：O(m∗n)O(m * n)O(m∗n)
+
+优化：因为我们每次只需要 dp[i-1][j],dp[i][j-1]
+
+所以我们只要记录这两个数，直接看代码吧！
+代码
+
+思路二：
+
+class Solution {
+    public int uniquePaths(int m, int n) {
+        int[][] dp = new int[m][n];
+        for (int i = 0; i < n; i++) dp[0][i] = 1;
+        for (int i = 0; i < m; i++) dp[i][0] = 1;
+        for (int i = 1; i < m; i++) {
+            for (int j = 1; j < n; j++) {
+                dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+            }
+        }
+        return dp[m - 1][n - 1];  
+    }
+}
+
+优化1：空间复杂度 O(2n)O(2n)O(2n)
+
+class Solution {
+    public int uniquePaths(int m, int n) {
+        int[] pre = new int[n];
+        int[] cur = new int[n];
+        Arrays.fill(pre, 1);
+        Arrays.fill(cur,1);
+        for (int i = 1; i < m;i++){
+            for (int j = 1; j < n; j++){
+                cur[j] = cur[j-1] + pre[j];  //把每一行的变化压缩到一起了，画图就可以理解
+            }
+            pre = cur.clone();
+        }
+        
+        return pre[n-1]; 
+    }
+}
+
+优化2：空间复杂度 O(n)O(n)O(n)
+
+class Solution {
+    public int uniquePaths(int m, int n) {
+        int[] cur = new int[n];
+        Arrays.fill(cur,1);
+        for (int i = 1; i < m;i++){
+            for (int j = 1; j < n; j++){
+                cur[j] += cur[j-1] ;
+            }
+        }
+        return cur[n-1];
+    }
+}
+
+作者：powcai
+链接：https://leetcode-cn.com/problems/unique-paths/solution/dong-tai-gui-hua-by-powcai-2/
