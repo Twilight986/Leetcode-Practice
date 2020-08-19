@@ -147,6 +147,8 @@ class Solution {
 
 本文就来由浅入深，step by step 地解决这个问题。如果你还不会递归地反转单链表也没关系，本文会从递归反转整个单链表开始拓展，只要你明白单链表的结构，相信你能够有所收获。
 
+在设计递归的时候，不要试图进入recrusion内部探究经过
+把前面的递归过程设想成已经完成，同时把结果现在已经到了最外层的最后一步，那么这时该如何操作呢，这里就是递归的主体部分了
 作者：labuladong
 链接：https://leetcode-cn.com/problems/reverse-linked-list-ii/solution/bu-bu-chai-jie-ru-he-di-gui-di-fan-zhuan-lian-biao/
 来源：力扣（LeetCode）
