@@ -24,8 +24,8 @@ class Solution {
         if (nums == null || nums.length == 0) return 0;
         if (nums.length == 1 || nums[right] > nums[0]) return nums[0];
         while (left <= right){
-            int mid = left + (right - left) / 2;
-            if (nums[mid + 1] < nums[mid]) return nums[mid + 1];
+            int mid = left + (right - left) / 2;  //先确定mid前后是不是转折点
+            if (nums[mid + 1] < nums[mid]) return nums[mid + 1];  //为了防止出现mid - 1的空指针异常，所以先从mid + 1开始判断
             if (nums[mid] < nums[mid - 1]) return nums[mid];
             if (nums[mid] > nums[0]){
                 left = mid + 1;
@@ -90,6 +90,7 @@ class Solution {
      左
 
     左值 > 中值, 中值 < 右值 ：有旋转，最小值在左半边，可以收缩右边界
+    或者，左值 > 中值，中值 > 右值，最小值在右半边，收缩左边界
 
      左       
              右
@@ -138,13 +139,14 @@ else if (nums[mid] < nums[right]) {right = mid;}。
 
 如果输入数组只有一个数，左右边界位置重合，left == right，不会进入while循环，直接输出。
 
-如果输入数组多于一个数，循环到最后，会只剩两个数，nums[left] == nums[mid]，以及nums[right]，这里的位置left == mid == right - 1。
+如果输入数组多于一个数，循环到最后，会只剩两个数，nums[left] == nums[mid]，以及nums[right]，这里的位置left == mid == right - 1。（为了保证判断不会报错，right的赋值不能是mid - 1）
 
 如果nums[left] == nums[mid] > nums[right]，则左边大、右边小，
 需要执行left = mid + 1，使得left == right，左右边界位置重合，循环结束，nums[left]与nums[right]都保存了最小值。
 
 如果nums[left] == nums[mid] < nums[right]，则左边小、右边大，
 会执行right = mid，使得left == right，左右边界位置重合，循环结束，nums[left]、nums[mid]、nums[right]都保存了最小值。
+其实最主要的思想就是 / 2 的操作取了下边界，那么随着指针的移动，最终一定会有left == mid
 
 细化了的代码：
 
