@@ -52,23 +52,26 @@ class Solution {
 }
 
 评价：medium
+
 讨论各种exception
 [2,5,6,0,0,1,2]
 2
 [1]
 1
+一个元素的情况，所以判断条件是<=
 [1]
 0
+如果指针的变化设定为left = mid或right = mid，有可能造成left == right，无法退出循环，造成runtimeexception，所以必须让两个指针的定位分开，设定为left = mid + 1或right = mid - 1;
 及while (nums[left] == nums[mid] && left <= mid){
       left++;
 }
-为什么不行
+left更新了，但是mid并没有更新，所以left有可能越出mid的范围
 
 参考讲解：
 本题是需要使用二分查找，怎么分是关键，举个例子：
 
     第一类
-    101111011110111 和 111011110111101 这种。此种情况下 nums[start] == nums[mid]，分不清到底是前面有序还是后面有序，此时 start++ 即可。相当于去掉一个重复的干扰项。
+    10111和 11101这种。此种情况下 nums[start] == nums[mid]，分不清到底是前面有序还是后面有序，此时 start++ 即可。相当于去掉一个重复的干扰项。
     第二类
     222 333 444 555 666 777 111 这种，也就是 nums[start] < nums[mid]。此例子中就是 2 < 5；
     这种情况下，前半部分有序。因此如果 nums[start] <=target<nums[mid]，则在前半部分找，否则去后半部分找。
