@@ -1,0 +1,86 @@
+Suppose we abstract our file system by a string in the following manner:
+
+The string "dir\n\tsubdir1\n\tsubdir2\n\t\tfile.ext" represents:
+
+dir
+    subdir1
+    subdir2
+        file.ext
+
+The directory dir contains an empty sub-directory subdir1 and a sub-directory subdir2 containing a file file.ext.
+
+The string "dir\n\tsubdir1\n\t\tfile1.ext\n\t\tsubsubdir1\n\tsubdir2\n\t\tsubsubdir2\n\t\t\tfile2.ext" represents:
+
+dir
+    subdir1
+        file1.ext
+        subsubdir1
+    subdir2
+        subsubdir2
+            file2.ext
+
+The directory dir contains two sub-directories subdir1 and subdir2. subdir1 contains a file file1.ext and an empty second-level sub-directory subsubdir1. subdir2 contains a second-level sub-directory subsubdir2 containing a file file2.ext.
+
+We are interested in finding the longest (number of characters) absolute path to a file within our file system. For example, in the second example above, the longest absolute path is "dir/subdir2/subsubdir2/file2.ext", and its length is 32 (not including the double quotes).
+
+Given a string representing the file system in the above format, return the length of the longest absolute path to file in the abstracted file system. If there is no file in the system, return 0.
+
+Note:
+
+    The name of a file contains at least a . and an extension.
+    The name of a directory or sub-directory will not contain a ..
+
+Time complexity required: O(n) where n is the size of the input string.
+
+Notice that a/aa/aaa/file1.txt is not the longest file path, if there is another path aaaaaaaaaaaaaaaaaaaaa/sth.png.
+
+
+评价：medium
+不懂答案
+
+参考讲解：
+【思路】
+
+    用split(‘\n’) 将原串分割开，相当于一次读一行
+
+    利用字符串前面’\t’的个数来当前目录/文件在第几层。第一层0个，第二层在split(‘\n’)后前面就有一个\t...以此类推
+
+    利用一个前缀和数组把前面几层的字符串长度都记下来，每次计算到包"."的文件时，说明到底了，更新下结果，再继续下一个计算，把数组前面的值覆盖掉
+
+    例子："dir\n\tsubdir1\n\tsubdir2\n\t\tfile.ext"
+    第一步分割成下面这样子
+
+    dir
+        \tsubdir1
+        \tsubdir2
+    	    \t\tfile.ext
+
+    第二步计算它在第几层，以及它的长度是多少
+
+代码
+
+class Solution {
+    public int lengthLongestPath(String input) {
+        if (input.length() == 0) {
+            return 0;
+        }
+        int res = 0;
+        int[] sum = new int[input.length() + 1];    //从1开始，第0层就是0
+
+        for (String s : input.split("\n")) {
+            int level = s.lastIndexOf('\t') + 2;    // 计算当前在第几层（从第一层开始，没有\t就是第一层）
+            int len = s.length() - (level - 1);     // 计算当前这一行的长度
+            if (s.contains(".")) {
+                res = Math.max(res, sum[level - 1] + len);
+            } else {
+                sum[level] = sum[level - 1] + len + 1;  //是目录，要+1，目录有个/的
+            }
+        }
+        return res;
+    }
+}
+
+作者：jerry_nju
+链接：https://leetcode-cn.com/problems/longest-absolute-file-path/solution/javajian-ji-de-zi-fu-chuan-chu-li-by-jerry_nju/
+来源：力扣（LeetCode）
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
