@@ -32,7 +32,7 @@ class Solution {
         store[j] = temp;
     }
 
-    public Solution(int[] nums) {
+    public Solution(int[] nums) {  //构造器，把传入的对象赋给private的对象
         store = nums;
         origin = nums.clone();
     }
