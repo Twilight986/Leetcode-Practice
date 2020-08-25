@@ -64,8 +64,8 @@ class Solution {
             result = new ArrayList<Integer>();
             int size = queue.size();
             for (int i = 0; i < size; i++){
-                int temp = queue.poll();
-                result.add(temp);  //从这里开始的运行过程不明白
+                int temp = queue.poll(); //poll()是从头取元素，add()是从尾加入
+                result.add(temp);  
                 List<Integer> nodes = map.get(temp);
                 for (Integer node : nodes){
                     if (--outdegrees[node] == 1) queue.add(node);
