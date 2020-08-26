@@ -50,7 +50,7 @@ class WordDictionary {
         }
     }
 
-    public Node head;
+    public Node head;  //定义的变量head是用来存储信息的
     /** Initialize your data structure here. */
     public WordDictionary() {
         head = new Node();
@@ -59,12 +59,12 @@ class WordDictionary {
     /** Adds a word into the data structure. */
     public void addWord(String word) {
         char[] single = word.toCharArray();
-        Node curr = head;
+        Node curr = head; //它们两个指向同一个地址，可以说curr是一个指针，现在指向head，指向后面（比如next）就相当于移动指针继续赋值，自认为用head.next也可以，就是可读性差一点
         for (int i = 0; i < single.length; i++){
             if (curr.next[single[i] - 'a'] == null) curr.next[single[i] - 'a'] = new Node();
             curr = curr.next[single[i] - 'a'];
         }
-        curr.flag = true;
+        curr.flag = true;  //一个单词最后一个字母的flag是true，也就是最底层为true
     }
     
     /** Returns if the word is in the data structure. A word could contain the dot character '.' to represent any one letter. */
@@ -74,7 +74,7 @@ class WordDictionary {
     
     public boolean searchHelper(String word, Node node){
         char[] wordArr = word.toCharArray();
-        Node curr = node;
+        Node curr = node;  //创建一个指向node（也就是head）的指针
         for (int i = 0; i < wordArr.length; i++){
             if (wordArr[i] == '.'){
                 for (int j = 0; j < 26; j++){
