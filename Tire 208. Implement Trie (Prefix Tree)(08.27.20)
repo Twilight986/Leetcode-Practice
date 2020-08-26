@@ -1,0 +1,252 @@
+Implement a trie with insert, search, and startsWith methods.
+
+Example:
+
+Trie trie = new Trie();
+
+trie.insert("apple");
+trie.search("apple");   // returns true
+trie.search("app");     // returns false
+trie.startsWith("app"); // returns true
+trie.insert("app");   
+trie.search("app");     // returns true
+
+Note:
+
+    You may assume that all inputs are consist of lowercase letters a-z.
+    All inputs are guaranteed to be non-empty strings.
+
+
+我的答案：
+class Trie {
+
+    class Node{
+        private Node[] next;
+        private boolean isEnd;
+        
+        public Node(){
+            next = new Node[26];
+            isEnd = false;
+            for (int i = 0; i < 26; i++) next[i] = null;
+        }
+    }
+    
+    public Node head;
+    /** Initialize your data structure here. */
+    public Trie() {
+        head = new Node();
+    }
+    
+    /** Inserts a word into the trie. */
+    public void insert(String word) {
+        Node curr = head;
+        char[] single = word.toCharArray();
+        for (int i = 0; i < single.length; i++){
+            if (curr.next[single[i] - 'a'] == null) curr.next[single[i] - 'a'] = new Node();
+            curr = curr.next[single[i] - 'a'];
+        }
+        curr.isEnd = true;
+    }
+    
+    /** Returns if the word is in the trie. */
+    public boolean search(String word) {
+        Node curr = head;
+        char[] single = word.toCharArray();
+        for (int i = 0; i < single.length; i++){
+            if (curr.next[single[i] - 'a'] != null) curr = curr.next[single[i] - 'a'];
+            else return false;
+        }
+        return curr.isEnd;
+    }
+    
+    /** Returns if there is any word in the trie that starts with the given prefix. */
+    public boolean startsWith(String prefix) {
+        Node curr = head;
+        char[] single = prefix.toCharArray();
+        for (int i = 0; i < single.length; i++){
+            if (curr.next[single[i] - 'a'] != null) curr = curr.next[single[i] - 'a'];
+            else return false;
+        }
+        return true;
+    }
+}
+
+/**
+ * Your Trie object will be instantiated and called as such:
+ * Trie obj = new Trie();
+ * obj.insert(word);
+ * boolean param_2 = obj.search(word);
+ * boolean param_3 = obj.startsWith(prefix);
+ */
+ 
+ 评价：medium
+ 
+ 参考讲解：
+ 介绍 Trie🌳
+
+Trie 是一颗非典型的多叉树模型，多叉好理解，即每个结点的分支数量可能为多个。
+
+为什么说非典型呢？因为它和一般的多叉树不一样，尤其在结点的数据结构设计上，比如一般的多叉树的结点是这样的：
+
+struct TreeNode {
+    VALUETYPE value;    //结点值
+    TreeNode* children[NUM];    //指向孩子结点
+};
+
+而 Trie 的结点是这样的(假设只包含'a'~'z'中的字符)：
+
+struct TrieNode {
+    bool isEnd; //该结点是否是一个串的结束
+    TrieNode* next[26]; //字母映射表
+};
+
+要想学会 Trie 就得先明白它的结点设计。我们可以看到TrieNode结点中并没有直接保存字符值的数据成员，那它是怎么保存字符的呢？
+
+这时字母映射表next 的妙用就体现了，TrieNode* next[26]中保存了对当前结点而言下一个可能出现的所有字符的链接，因此我们可以通过一个父结点来预知它所有子结点的值：
+
+for (int i = 0; i < 26; i++) {
+    char ch = 'a' + i;
+    if (parentNode->next[i] == NULL) {
+        说明父结点的后一个字母不可为 ch
+    } else {
+        说明父结点的后一个字母可以是 ch
+    }
+}
+
+我们来看个例子吧。
+
+想象以下，包含三个单词"sea","sells","she"的 Trie 会长啥样呢？
+
+它的真实情况是这样的：
+
+来自算法4
+
+Trie 中一般都含有大量的空链接，因此在绘制一棵单词查找树时一般会忽略空链接，同时为了方便理解我们可以画成这样：
+
+实际并非如此，但我们仍可这样理解
+
+接下来我们一起来实现对 Trie 的一些常用操作方法。
+定义类 Trie
+
+class Trie {
+private:
+    bool isEnd;
+    Trie* next[26];
+public:
+    //方法将在下文实现...
+};
+
+插入
+
+描述：向 Trie 中插入一个单词 word
+
+实现：这个操作和构建链表很像。首先从根结点的子结点开始与 word 第一个字符进行匹配，一直匹配到前缀链上没有对应的字符，这时开始不断开辟新的结点，直到插入完 word 的最后一个字符，同时还要将最后一个结点isEnd = true;，表示它是一个单词的末尾。
+
+void insert(string word) {
+    Trie* node = this;
+    for (char c : word) {
+        if (node->next[c-'a'] == NULL) {
+            node->next[c-'a'] = new Trie();
+        }
+        node = node->next[c-'a'];
+    }
+    node->isEnd = true;
+}
+
+查找
+
+描述：查找 Trie 中是否存在单词 word
+
+实现：从根结点的子结点开始，一直向下匹配即可，如果出现结点值为空就返回false，如果匹配到了最后一个字符，那我们只需判断node->isEnd即可。
+
+bool search(string word) {
+    Trie* node = this;
+    for (char c : word) {
+        node = node->next[c - 'a'];
+        if (node == NULL) {
+            return false;
+        }
+    }
+    return node->isEnd;
+}
+
+前缀匹配
+
+描述：判断 Trie 中是或有以 prefix 为前缀的单词
+
+实现：和 search 操作类似，只是不需要判断最后一个字符结点的isEnd，因为既然能匹配到最后一个字符，那后面一定有单词是以它为前缀的。
+
+bool startsWith(string prefix) {
+    Trie* node = this;
+    for (char c : prefix) {
+        node = node->next[c-'a'];
+        if (node == NULL) {
+            return false;
+        }
+    }
+    return true;
+}
+
+到这我们就已经实现了对 Trie 的一些基本操作，这样我们对 Trie 就有了进一步的理解。完整代码我贴在了文末。
+总结
+
+通过以上介绍和代码实现我们可以总结出 Trie 的几点性质：
+
+    Trie 的形状和单词的插入或删除顺序无关，也就是说对于任意给定的一组单词，Trie 的形状都是唯一的。
+
+    查找或插入一个长度为 L 的单词，访问 next 数组的次数最多为 L+1，和 Trie 中包含多少个单词无关。
+
+    Trie 的每个结点中都保留着一个字母表，这是很耗费空间的。如果 Trie 的高度为 n，字母表的大小为 m，最坏的情况是 Trie 中还不存在前缀相同的单词，那空间复杂度就为 O(m^n)。
+
+最后，关于 Trie 的应用场景，希望你能记住 8 个字：一次建树，多次查询。(慢慢领悟叭~~)
+全部代码
+
+class Trie {
+private:
+    bool isEnd;
+    Trie* next[26];
+public:
+    Trie() {
+        isEnd = false;
+        memset(next, 0, sizeof(next));
+    }
+    
+    void insert(string word) {
+        Trie* node = this;
+        for (char c : word) {
+            if (node->next[c-'a'] == NULL) {
+                node->next[c-'a'] = new Trie();
+            }
+            node = node->next[c-'a'];
+        }
+        node->isEnd = true;
+    }
+    
+    bool search(string word) {
+        Trie* node = this;
+        for (char c : word) {
+            node = node->next[c - 'a'];
+            if (node == NULL) {
+                return false;
+            }
+        }
+        return node->isEnd;
+    }
+    
+    bool startsWith(string prefix) {
+        Trie* node = this;
+        for (char c : prefix) {
+            node = node->next[c-'a'];
+            if (node == NULL) {
+                return false;
+            }
+        }
+        return true;
+    }
+};
+
+
+作者：huwt
+链接：https://leetcode-cn.com/problems/implement-trie-prefix-tree/solution/trie-tree-de-shi-xian-gua-he-chu-xue-zhe-by-huwt/
+来源：力扣（LeetCode）
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
