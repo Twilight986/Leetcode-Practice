@@ -30,7 +30,7 @@ class Solution {
         String r1 = root(parent);
         String r2 = root(child);
         if (!r1.equals(r2)){
-            parents.put(r2, r1);
+            parents.put(r2, r1);  //put()相同的key之后原来的value会被直接覆盖，如果想要全部存储的话建议先用if(containsKey)，然后再new一个list放进去
             values.put(r2, value * (pm(parent)/ pm(child)));
         }
     }
