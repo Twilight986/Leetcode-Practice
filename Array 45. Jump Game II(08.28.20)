@@ -1,0 +1,101 @@
+Given an array of non-negative integers, you are initially positioned at the first index of the array.
+
+Each element in the array represents your maximum jump length at that position.
+
+Your goal is to reach the last index in the minimum number of jumps.
+
+Example:
+
+Input: [2,3,1,1,4]
+Output: 2
+Explanation: The minimum number of jumps to reach the last index is 2.
+    Jump 1 step from index 0 to 1, then 3 steps to the last index.
+
+Note:
+
+You can assume that you can always reach the last index.
+
+
+评价：medium
+参考讲解：
+解题思路：
+
+从数组的第 0 个位置开始跳，跳的距离小于等于数组上对应的数。求出跳到最后个位置需要的最短步数。比如上图中的第 0 个位置是 2，那么可以跳 1 个距离，或者 2 个距离，我们选择跳 1 个距离，就跳到了第 1 个位置，也就是 3 上。然后我们可以跳 1，2，3 个距离，我们选择跳 3 个距离，就直接到最后了。所以总共需要 2 步。
+解法一 ：顺藤摸瓜
+
+LeetCode 讨论里，大部分都是这个思路，贪婪算法，我们每次在可跳范围内选择可以使得跳的更远的位置。
+
+如下图，开始的位置是 2，可跳的范围是橙色的。然后因为 3 可以跳的更远，所以跳到 3 的位置。
+
+image.png
+
+如下图，然后现在的位置就是 3 了，能跳的范围是橙色的，然后因为 4 可以跳的更远，所以下次跳到 4 的位置。
+
+image.png
+
+写代码的话，我们用 end 表示当前能跳的边界，对于上边第一个图的橙色 1，第二个图中就是橙色的 4，遍历数组的时候，到了边界，我们就重新更新新的边界。
+
+public int jump(int[] nums) {
+    int end = 0;
+    int maxPosition = 0; 
+    int steps = 0;
+    for(int i = 0; i < nums.length - 1; i++){
+        //找能跳的最远的
+        maxPosition = Math.max(maxPosition, nums[i] + i); 
+        if( i == end){ //遇到边界，就更新边界，并且步数加一
+            end = maxPosition;
+            steps++;
+        }
+    }
+    return steps;
+}
+
+时间复杂度：O(n)O(n)O(n)。
+
+空间复杂度：O(1)O(1)O(1)。
+
+这里要注意一个细节，就是 for 循环中，i < nums.length - 1，少了末尾。因为开始的时候边界是第 000 个位置，steps 已经加 111 了。如下图，如果最后一步刚好跳到了末尾，此时 steps 其实不用加 111 了。如果是 i < nums.length，i 遍历到最后的时候，会进入 if 语句中，steps 会多加 111。
+
+image.png
+解法二：方法一：反向查找出发位置
+
+我们的目标是到达数组的最后一个位置，因此我们可以考虑最后一步跳跃前所在的位置，该位置通过跳跃能够到达最后一个位置。
+
+如果有多个位置通过跳跃都能够到达最后一个位置，那么我们应该如何进行选择呢？直观上来看，我们可以「贪心」地选择距离最后一个位置最远的那个位置，也就是对应下标最小的那个位置。因此，我们可以从左到右遍历数组，选择第一个满足要求的位置。
+
+找到最后一步跳跃前所在的位置之后，我们继续贪心地寻找倒数第二步跳跃前所在的位置，以此类推，直到找到数组的开始位置。
+
+使用这种方法编写的 C++ 和 Python 代码会超出时间限制，因此我们只给出 Java 和 Go 代码。
+
+class Solution {
+    public int jump(int[] nums) {
+        int position = nums.length - 1;
+        int steps = 0;
+        while (position > 0) {
+            for (int i = 0; i < position; i++) {
+                if (i + nums[i] >= position) {
+                    position = i;
+                    steps++;
+                    break;
+                }
+            }
+        }
+        return steps;
+    }
+}
+
+复杂度分析
+
+    时间复杂度：O(n2)O(n^2)O(n2)，其中 nnn 是数组长度。有两层嵌套循环，在最坏的情况下，例如数组中的所有元素都是 111，position 需要遍历数组中的每个位置，对于 position 的每个值都有一次循环。
+
+    空间复杂度：O(1)O(1)O(1)。
+
+作者：LeetCode-Solution
+链接：https://leetcode-cn.com/problems/jump-game-ii/solution/tiao-yue-you-xi-ii-by-leetcode-solution/
+来源：力扣（LeetCode）
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+
+作者：windliang
+链接：https://leetcode-cn.com/problems/jump-game-ii/solution/xiang-xi-tong-su-de-si-lu-fen-xi-duo-jie-fa-by-10/
+来源：力扣（LeetCode）
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
