@@ -46,9 +46,9 @@ class Solution {
         StringBuilder result = new StringBuilder();
         int index = 0;
         while (num > 0){
-            if (num % 1000 != 0){
+            if (num % 1000 != 0){  
                 StringBuilder sb = new StringBuilder();
-                helper(num % 1000, sb);
+                helper(num % 1000, sb);  //先取最后3位
                 result.insert(0, sb.append(THOUSAND[index]).append(" "));
             }
             index++;
