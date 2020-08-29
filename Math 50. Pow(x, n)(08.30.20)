@@ -1,0 +1,189 @@
+Implement pow(x, n), which calculates x raised to the power n (i.e. xn).
+
+ 
+
+Example 1:
+
+Input: x = 2.00000, n = 10
+Output: 1024.00000
+
+Example 2:
+
+Input: x = 2.10000, n = 3
+Output: 9.26100
+
+Example 3:
+
+Input: x = 2.00000, n = -2
+Output: 0.25000
+Explanation: 2-2 = 1/22 = 1/4 = 0.25
+
+ 
+
+Constraints:
+
+    -100.0 < x < 100.0
+    -231 <= n <= 231-1
+    -104 <= xn <= 104
+
+
+我的答案：
+class Solution {
+    
+    public double divide(double x, int n){
+        if (n == 0) return 1;
+        double result = divide(x, n / 2);
+        return ((n % 2) == 0) ? result * result : result * result * x;
+    }
+    
+    public double myPow(double x, int n) {
+        if (n < 0) {
+            return 1.0 / divide(x, -n);
+        }else return divide(x, n);        
+    }
+}
+
+评价：medium
+官方题解二在
+2.00000
+-2147483648
+时是错的
+
+参考讲解：
+前言
+
+本题的方法被称为「快速幂算法」，有递归和迭代两个版本。这篇题解会从递归版本的开始讲起，再逐步引出迭代的版本。
+
+当指数 nnn 为负数时，我们可以计算 x−nx^{-n}x−n 再取倒数得到结果，因此我们只需要考虑 nnn 为自然数的情况。
+方法一：快速幂 + 递归
+
+「快速幂算法」的本质是分治算法。举个例子，如果我们要计算 x64x^{64}x64，我们可以按照：
+
+x→x2→x4→x8→x16→x32→x64x \to x^2 \to x^4 \to x^8 \to x^{16} \to x^{32} \to x^{64} x→x2→x4→x8→x16→x32→x64
+
+的顺序，从 xxx 开始，每次直接把上一次的结果进行平方，计算 666 次就可以得到 x64x^{64}x64 的值，而不需要对 xxx 乘 636363 次 xxx。
+
+再举一个例子，如果我们要计算 x77x^{77}x77，我们可以按照：
+
+x→x2→x4→x9→x19→x38→x77x \to x^2 \to x^4 \to x^9 \to x^{19} \to x^{38} \to x^{77} x→x2→x4→x9→x19→x38→x77
+
+的顺序，在 x→x2x \to x^2x→x2，x2→x4x^2 \to x^4x2→x4，x19→x38x^{19} \to x^{38}x19→x38 这些步骤中，我们直接把上一次的结果进行平方，而在 x4→x9x^4 \to x^9x4→x9，x9→x19x^9 \to x^{19}x9→x19，x38→x77x^{38} \to x^{77}x38→x77 这些步骤中，我们把上一次的结果进行平方后，还要额外乘一个 xxx。
+
+直接从左到右进行推导看上去很困难，因为在每一步中，我们不知道在将上一次的结果平方之后，还需不需要额外乘 xxx。但如果我们从右往左看，分治的思想就十分明显了：
+
+    当我们要计算 xnx^nxn 时，我们可以先递归地计算出 y=x⌊n/2⌋y = x^{\lfloor n/2 \rfloor}y=x⌊n/2⌋，其中 ⌊a⌋\lfloor a \rfloor⌊a⌋ 表示对 aaa 进行下取整；
+
+    根据递归计算的结果，如果 nnn 为偶数，那么 xn=y2x^n = y^2xn=y2；如果 nnn 为奇数，那么 xn=y2∗xx^n = y^2 * xxn=y2∗x；
+
+    递归的边界为 n=0n = 0n=0，任意数的 000 次方均为 111。
+
+由于每次递归都会使得指数减少一半，因此递归的层数为 O(log⁡n)O(\log n)O(logn)，算法可以在很快的时间内得到结果。
+
+class Solution {
+    public double quickMul(double x, long N) {
+        if (N == 0) {
+            return 1.0;
+        }
+        double y = quickMul(x, N / 2);
+        return N % 2 == 0 ? y * y : y * y * x;
+    }
+
+    public double myPow(double x, int n) {
+        long N = n;
+        return N >= 0 ? quickMul(x, N) : 1.0 / quickMul(x, -N);
+    }
+}
+
+复杂度分析
+
+    时间复杂度：O(log⁡n)O(\log n)O(logn)，即为递归的层数。
+
+    空间复杂度：O(log⁡n)O(\log n)O(logn)，即为递归的层数。这是由于递归的函数调用会使用栈空间。
+
+方法二：快速幂 + 迭代
+
+由于递归需要使用额外的栈空间，我们试着将递归转写为迭代。在方法一中，我们也提到过，从左到右进行推导是不容易的，因为我们不知道是否需要额外乘 xxx。但我们不妨找一找规律，看看哪些地方额外乘了 xxx，并且它们对答案产生了什么影响。
+
+我们还是以 x77x^{77}x77 作为例子：
+
+x→x2→x4→+x9→+x19→x38→+x77x \to x^2 \to x^4 \to^+ x^9 \to^+ x^{19} \to x^{38} \to^+ x^{77} x→x2→x4→+x9→+x19→x38→+x77
+
+并且把需要额外乘 xxx 的步骤打上了 +++ 标记。可以发现：
+
+    x38→+x77x^{38} \to^+ x^{77}x38→+x77 中额外乘的 xxx 在 x77x^{77}x77 中贡献了 xxx；
+
+    x9→+x19x^9 \to^+ x^{19}x9→+x19 中额外乘的 xxx 在之后被平方了 222 次，因此在 x77x^{77}x77 中贡献了 x22=x4x^{2^2} = x^4x22=x4；
+
+    x4→+x9x^4 \to^+ x^9x4→+x9 中额外乘的 xxx 在之后被平方了 333 次，因此在 x77x^{77}x77 中贡献了 x23=x8x^{2^3} = x^8x23=x8；
+
+    最初的 xxx 在之后被平方了 666 次，因此在 x77x^{77}x77 中贡献了 x26=x64x^{2^6} = x^{64}x26=x64。
+
+我们把这些贡献相乘，x∗x4∗x8∗x64x * x^4 * x^8 * x^{64}x∗x4∗x8∗x64 恰好等于 x77x^{77}x77。而这些贡献的指数部分又是什么呢？它们都是 222 的幂次，这是因为每个额外乘的 xxx 在之后都会被平方若干次。而这些指数 111，444，888 和 646464，恰好就对应了 777777 的二进制表示 (1001101)2(1001101)_2(1001101)2​ 中的每个 111！
+
+因此我们借助整数的二进制拆分，就可以得到迭代计算的方法，一般地，如果整数 nnn 的二进制拆分为
+
+n=2i0+2i1+⋯+2ikn = 2^{i_0} + 2^{i_1} + \cdots + 2^{i_k} n=2i0​+2i1​+⋯+2ik​
+
+那么
+
+xn=x2i0∗x2i1∗⋯∗x2ikx^n = x^{2^{i_0}} * x^{2^{i_1}} * \cdots * x^{2^{i_k}} xn=x2i0​∗x2i1​∗⋯∗x2ik​
+
+这样以来，我们从 xxx 开始不断地进行平方，得到 x2,x4,x8,x16,⋯x^2, x^4, x^8, x^{16}, \cdotsx2,x4,x8,x16,⋯，如果 nnn 的第 kkk 个（从右往左，从 000 开始计数）二进制位为 111，那么我们就将对应的贡献 x2kx^{2^k}x2k计入答案。
+
+下面的代码给出了详细的注释。
+
+class Solution {
+    double quickMul(double x, long N) {
+        double ans = 1.0;
+        // 贡献的初始值为 x
+        double x_contribute = x;
+        // 在对 N 进行二进制拆分的同时计算答案
+        while (N > 0) {
+            if (N % 2 == 1) {
+                // 如果 N 二进制表示的最低位为 1，那么需要计入贡献
+                ans *= x_contribute;
+            }
+            // 将贡献不断地平方
+            x_contribute *= x_contribute;
+            // 舍弃 N 二进制表示的最低位，这样我们每次只要判断最低位即可
+            N /= 2;
+        }
+        return ans;
+    }
+
+    public double myPow(double x, int n) {
+        long N = n;
+        return N >= 0 ? quickMul(x, N) : 1.0 / quickMul(x, -N);
+    }
+}
+
+复杂度分析
+
+    时间复杂度：O(log⁡n)O(\log n)O(logn)，即为对 nnn 进行二进制拆分的时间复杂度。
+
+    空间复杂度：O(1)O(1)O(1)。
+
+作者：LeetCode-Solution
+链接：https://leetcode-cn.com/problems/powx-n/solution/powx-n-by-leetcode-solution/
+来源：力扣（LeetCode）
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+
+不能通过的用例：x=1,n=Integer.MIN_VALUE; 直接调用 （1，-n）会导致死循环，所以要进行判断。 我的代码：
+
+class Solution {
+    public double myPow(double x, int n) {
+        if(x==1) return 1;
+        if(x==0) return 0;
+        if(n==0) return 1;
+        if(n==Integer.MIN_VALUE) return 1/myPow(x,Integer.MAX_VALUE)*x;
+        if(n<0) return 1/myPow(x,-n);
+        double a = x;
+        double ans = 1;
+        while(n>0){
+            if((n&1)==1) ans *= a;
+            n = n>>1;
+            a = a*a;
+        }
+        return ans;
+    }
+}
