@@ -47,7 +47,7 @@ class Solution {
             b += b;
             a -= b;
         }
-        int res = result + opposite(divide(dividend - b, divisor));
+        int res = result + opposite(divide(dividend - b, divisor));  //这里dividend - b减去的是2n倍的divisor，所以result保存2n倍的是正确的，并且即使原本的a b是倍数关系，最后也会进入递归，因为a == 0时， b != dividend
         if (res == Integer.MIN_VALUE){
             if (sign > 0) return Integer.MAX_VALUE;
             else return Integer.MIN_VALUE;
@@ -59,7 +59,7 @@ class Solution {
 }
 
 评价：medium
-这里保留a -= b确实比每次都用原来的a快，但是我很纳闷，明明每次都会多减一个原来的b，那么result就应该在翻倍的基础上加上原来的result才对，为什么不加也没问题呢？
+这里保留a -= b确实比每次都用原来的a快
 
 参考讲解：
 尝试1
