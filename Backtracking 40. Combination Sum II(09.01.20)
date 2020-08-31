@@ -1,0 +1,198 @@
+Given a collection of candidate numbers (candidates) and a target number (target), find all unique combinations in candidates where the candidate numbers sums to target.
+
+Each number in candidates may only be used once in the combination.
+
+Note:
+
+    All numbers (including target) will be positive integers.
+    The solution set must not contain duplicate combinations.
+
+Example 1:
+
+Input: candidates = [10,1,2,7,6,1,5], target = 8,
+A solution set is:
+[
+  [1, 7],
+  [1, 2, 5],
+  [2, 6],
+  [1, 1, 6]
+]
+
+Example 2:
+
+Input: candidates = [2,5,2,1,2], target = 5,
+A solution set is:
+[
+  [1,2,2],
+  [5]
+]
+
+
+我的答案：
+class Solution {
+    public List<List<Integer>> combinationSum2(int[] candidates, int target) {
+        List<List<Integer>> result = new ArrayList<>();
+        int len = candidates.length;
+        if (target == 0 || len == 0) return result;
+        Deque<Integer> path = new ArrayDeque<>(len);
+        Arrays.sort(candidates);
+        dfs(candidates,target, path, len, result, 0);
+        return result;
+    } 
+    
+    public void dfs(int[] candidates, int target, Deque<Integer> path, int len, List<List<Integer>> result, int begin){
+        if (target == 0) {
+            result.add(new ArrayList<>(path));
+            return;
+        }
+        for (int i = begin; i < len; i++){
+            if (target - candidates[i] < 0) break;
+            if (i > begin && candidates[i] == candidates[i - 1]) continue;
+            path.addLast(candidates[i]);
+            dfs(candidates, target - candidates[i], path, len, result, i + 1);
+            path.removeLast();
+        }
+    }
+}
+
+评价：medium
+注意把不符合要求的元素用大剪枝和小剪枝筛选
+
+参考讲解：
+一句话题解：按顺序搜索，设置合理的变量，在搜索的过程中判断是否会出现重复集结果。重点理解对输入数组排序的作用和 参考代码 中大剪枝和小剪枝 的意思。
+与第 39 题（组合之和）的差别
+
+这道题与上一问的区别在于：
+
+    第 39 题：candidates 中的数字可以无限制重复被选取；
+    第 40 题：candidates 中的每个数字在每个组合中只能使用一次。
+
+相同点是：相同数字列表的不同排列视为一个结果。
+如何去掉重复的集合（重点）
+
+为了使得解集不包含重复的组合。有以下 222 种方案：
+
+    使用 哈希表 天然的去重功能，但是编码相对复杂；
+    这里我们使用和第 39 题和第 15 题（三数之和）类似的思路：不重复就需要按 顺序 搜索， 在搜索的过程中检测分支是否会出现重复结果 。注意：这里的顺序不仅仅指数组 candidates 有序，还指按照一定顺序搜索结果。
+
+将数组先排序的思路来自于这个问题：去掉一个数组中重复的元素。很容易想到的方案是：先对数组 升序 排序，重复的元素一定不是排好序以后相同的连续数组区域的第 111 个元素。
+
+由第 39 题我们知道，数组 candidates 有序，也是 深度优先遍历 过程中实现「剪枝」的前提。
+说明：
+
+    解决这个问题可能需要解决 第 15 题（三数之和）、 第 47 题（全排列 II）、 第 39 题（组合之和）的经验；
+    对于如何去重还不太清楚的朋友，可以参考当前题解的 高赞置顶评论 。
+
+感谢用户 @rmokerone 提供的 C++ 版本的参考代码。
+
+参考代码 1：
+
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.List;
+
+public class Solution {
+
+    public List<List<Integer>> combinationSum2(int[] candidates, int target) {
+        int len = candidates.length;
+        List<List<Integer>> res = new ArrayList<>();
+        if (len == 0) {
+            return res;
+        }
+
+        // 关键步骤
+        Arrays.sort(candidates);
+
+        Deque<Integer> path = new ArrayDeque<>(len);
+        dfs(candidates, len, 0, target, path, res);
+        return res;
+    }
+
+    /**
+     * @param candidates 候选数组
+     * @param len        冗余变量
+     * @param begin      从候选数组的 begin 位置开始搜索
+     * @param target     表示剩余，这个值一开始等于 target，基于题目中说明的"所有数字（包括目标数）都是正整数"这个条件
+     * @param path       从根结点到叶子结点的路径
+     * @param res
+     */
+    private void dfs(int[] candidates, int len, int begin, int target, Deque<Integer> path, List<List<Integer>> res) {
+        if (target == 0) {
+            res.add(new ArrayList<>(path));
+            return;
+        }
+        for (int i = begin; i < len; i++) {
+            // 大剪枝
+            if (target - candidates[i] < 0) {
+                break;
+            }
+
+            // 小剪枝
+            if (i > begin && candidates[i] == candidates[i - 1]) {
+                continue;
+            }
+
+            path.addLast(candidates[i]);
+            // 调试语句 ①
+            // System.out.println("递归之前 => " + path + "，剩余 = " + (target - candidates[i]));
+
+            // 因为元素不可以重复使用，这里递归传递下去的是 i + 1 而不是 i
+            dfs(candidates, len, i + 1, target - candidates[i], path, res);
+
+            path.removeLast();
+            // 调试语句 ②
+            // System.out.println("递归之后 => " + path + "，剩余 = " + (target - candidates[i]));
+        }
+    }
+
+    public static void main(String[] args) {
+        int[] candidates = new int[]{10, 1, 2, 7, 6, 1, 5};
+        int target = 8;
+        Solution solution = new Solution();
+        List<List<Integer>> res = solution.combinationSum2(candidates, target);
+        System.out.println("输出 => " + res);
+    }
+}
+
+打开上面的调试语句（Java 版代码），针对输入 int[] candidates = new int[]{10, 1, 2, 7, 6, 1, 5}; 和 int target = 8; 控制台输出如下：
+
+递归之前 => [1]，剩余 = 7
+递归之前 => [1, 1]，剩余 = 6
+递归之前 => [1, 1, 2]，剩余 = 4
+递归之后 => [1, 1]，剩余 = 4
+递归之前 => [1, 1, 5]，剩余 = 1
+递归之后 => [1, 1]，剩余 = 1
+递归之前 => [1, 1, 6]，剩余 = 0
+递归之后 => [1, 1]，剩余 = 0
+递归之后 => [1]，剩余 = 6
+递归之前 => [1, 2]，剩余 = 5
+递归之前 => [1, 2, 5]，剩余 = 0
+递归之后 => [1, 2]，剩余 = 0
+递归之后 => [1]，剩余 = 5
+递归之前 => [1, 5]，剩余 = 2
+递归之后 => [1]，剩余 = 2
+递归之前 => [1, 6]，剩余 = 1
+递归之后 => [1]，剩余 = 1
+递归之前 => [1, 7]，剩余 = 0
+递归之后 => [1]，剩余 = 0
+递归之后 => []，剩余 = 7
+递归之前 => [2]，剩余 = 6
+递归之前 => [2, 5]，剩余 = 1
+递归之后 => [2]，剩余 = 1
+递归之前 => [2, 6]，剩余 = 0
+递归之后 => [2]，剩余 = 0
+递归之后 => []，剩余 = 6
+递归之前 => [5]，剩余 = 3
+递归之后 => []，剩余 = 3
+递归之前 => [6]，剩余 = 2
+递归之后 => []，剩余 = 2
+递归之前 => [7]，剩余 = 1
+递归之后 => []，剩余 = 1
+输出 => [[1, 1, 6], [1, 2, 5], [1, 7], [2, 6]]
+
+作者：liweiwei1419
+链接：https://leetcode-cn.com/problems/combination-sum-ii/solution/hui-su-suan-fa-jian-zhi-python-dai-ma-java-dai-m-3/
+来源：力扣（LeetCode）
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
