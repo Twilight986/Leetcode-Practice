@@ -1,0 +1,205 @@
+Given a collection of numbers that might contain duplicates, return all possible unique permutations.
+
+Example:
+
+Input: [1,1,2]
+Output:
+[
+  [1,1,2],
+  [1,2,1],
+  [2,1,1]
+]
+
+
+我的答案：
+class Solution {
+    public List<List<Integer>> permuteUnique(int[] nums) {
+        Arrays.sort(nums);
+        List<List<Integer>> result = new ArrayList<>();
+        int len = nums.length;
+        if (len == 0) return result;
+        Deque<Integer> path = new ArrayDeque<>(len);
+        boolean isUsed[] = new boolean[len];
+        dfs(nums, path, result, len, 0, isUsed);
+        return result;
+    }
+    
+    public void dfs(int[] nums, Deque<Integer> path, List<List<Integer>> result, int len, int depth, boolean[] isUsed){
+        if (depth == len) {
+            result.add(new ArrayList<>(path));
+            return;
+        }
+        for (int i = 0; i < len; i++){
+            if (!isUsed[i]){
+                if (i > 0 && nums[i] == nums[i - 1] && !isUsed[i - 1]) continue;
+                path.addLast(nums[i]);
+                isUsed[i] = true;
+                dfs(nums, path, result, len, depth + 1, isUsed);
+                path.removeLast();
+                isUsed[i] = false;
+            }
+        }
+    }
+}
+
+评价：medium
+注意剪枝的条件，一定要判断isUsed
+如果没加isUsed判断的话，输出是空[]，下面是简单的分析：
+比如[1, 1', 2]
+1先入栈，然后向下一层，1'和前面的1是重复的，所以被剪掉了，2入栈
+这时到了下一层，又找到了1'，还是和它本身前面的元素重复，因此又被剪掉了，入不了下一层，因此path也没有加入result中，此时path就重置了
+对于1'，在刚入栈的时候就因为和1重复被剪掉了
+最后是2，一开始1接在后面，没问题，然后是1'，又因为重复，被剪掉了，path又没能进到result中，对于1'先入栈，也是一样的情况
+由于有重复的元素，因此永远不可能进到depth == len之中，result自然就为空了
+
+对于用!isUsed还是isUsed判断，就是剪枝顺序的不同
+!isUsed情况：是在回溯之后判断相同的元素之前是不是已经在原先的path中用过了，也就是在同一层判断，用画图就能比较直观地想到
+isUsed情况：就是在一次遍历的过程中看是不是有重复的元素在队列中，最后只保存一种入栈顺序的结果，比较繁杂，不推荐，具体可以看后面的讲解
+
+参考讲解：
+思路：在一定会产生重复结果集的地方剪枝。
+
+一个比较容易想到的办法是在结果集中去重。但是问题又来了，这些结果集的元素是一个又一个列表，对列表去重不像用哈希表对基本元素去重那样容易。
+
+如果要比较两个列表是否一样，一个很显然的办法是分别排序，然后逐个比对。既然要排序，我们可以在搜索之前就对候选数组排序，一旦发现这一支搜索下去可能搜索到重复的元素就停止搜索，这样结果集中不会包含重复元素。
+
+LeetCode 第 47 题：“全排列 II”题解配图.png
+
+产生重复结点的地方，正是图中标注了“剪刀”，且被绿色框框住的地方。
+
+大家也可以把第 2 个 1 加上 ' ，即 [1, 1', 2] 去想象这个搜索的过程。只要遇到起点一样，就有可能产生重复。这里还有一个很细节的地方：
+
+1、在图中 ② 处，搜索的数也和上一次一样，但是上一次的 1 还在使用中；
+2、在图中 ① 处，搜索的数也和上一次一样，但是上一次的 1 刚刚被撤销，正是因为刚被撤销，下面的搜索中还会使用到，因此会产生重复，剪掉的就应该是这样的分支。
+
+代码实现方面，在第 46 题的基础上，要加上这样一段代码：
+
+if (i > 0 && nums[i] == nums[i - 1] && !used[i - 1]) {
+    continue;
+}
+
+这段代码就能检测到标注为 ① 的两个结点，跳过它们。注意：这里 used[i - 1] 不加 !，测评也能通过。有兴趣的朋友可以想一想这是为什么。建议大家做这样几个对比实验：
+
+1、干脆就不写 !used[i - 1] 结果是什么样？
+2、写 used[i - 1] 结果是什么，代码又是怎样执行的。这里给的结论是：!used[i - 1] 这样的剪枝更彻底。附录会分析原因。
+
+参考代码 1：
+
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.List;
+
+public class Solution {
+
+    public List<List<Integer>> permuteUnique(int[] nums) {
+        int len = nums.length;
+        List<List<Integer>> res = new ArrayList<>();
+        if (len == 0) {
+            return res;
+        }
+
+        // 排序（升序或者降序都可以），排序是剪枝的前提
+        Arrays.sort(nums);
+
+        boolean[] used = new boolean[len];
+        // 使用 Deque 是 Java 官方 Stack 类的建议
+        Deque<Integer> path = new ArrayDeque<>(len);
+        dfs(nums, len, 0, used, path, res);
+        return res;
+    }
+
+    private void dfs(int[] nums, int len, int depth, boolean[] used, Deque<Integer> path, List<List<Integer>> res) {
+        if (depth == len) {
+            res.add(new ArrayList<>(path));
+            return;
+        }
+
+        for (int i = 0; i < len; ++i) {
+            if (used[i]) {
+                continue;
+            }
+
+            // 剪枝条件：i > 0 是为了保证 nums[i - 1] 有意义
+            // 写 !used[i - 1] 是因为 nums[i - 1] 在深度优先遍历的过程中刚刚被撤销选择
+            if (i > 0 && nums[i] == nums[i - 1] && !used[i - 1]) {
+                continue;
+            }
+
+            path.addLast(nums[i]);
+            used[i] = true;
+
+            dfs(nums, len, depth + 1, used, path, res);
+            // 回溯部分的代码，和 dfs 之前的代码是对称的
+            used[i] = false;
+            path.removeLast();
+        }
+    }
+
+    public static void main(String[] args) {
+        Solution solution = new Solution();
+        int[] nums = {1, 1, 2};
+        List<List<Integer>> res = solution.permuteUnique(nums);
+        System.out.println(res);
+    }
+}
+
+复杂度分析：（理由同第 46 题，重复元素越多，剪枝越多。但是计算复杂度的时候需要考虑最差情况。）
+
+    时间复杂度：O(N×N!)O(N \times N!)O(N×N!)，这里 NNN 为数组的长度。
+    空间复杂度：O(N×N!)O(N \times N!)O(N×N!)。
+
+
+补充说明（这部分内容不太重要，只要理解上面深搜是怎么剪枝的就行）
+
+写 used[i - 1] 代码正确，但是不推荐的原因。
+
+思路是根据深度优先遍历的执行流程，看一看那些状态变量（布尔数组 used）的值。
+
+1、如果剪枝写的是：
+
+if (i > 0 && nums[i] == nums[i - 1] && !used[i - 1]) {
+    continue;
+}
+
+那么，对于数组 [1, 1’, 1’’, 2]，回溯的过程如下：
+
+image.png
+
+得到的全排列是：[[1, 1', 1'', 2], [1, 1', 2, 1''], [1, 2, 1', 1''], [2, 1, 1', 1'']]。特点是：1、1'、1'' 出现的顺序只能是 1、1'、1''。
+
+2、如果剪枝写的是：
+
+if (i > 0 && nums[i] == nums[i - 1] && used[i - 1]) {
+    continue;
+}
+
+那么，对于数组 [1, 1’, 1’’, 2]，回溯的过程如下（因为过程稍显繁琐，所以没有画在一张图里）：
+
+（1）先选第 1 个数字，有 4 种取法。
+
+image.png
+
+（2）对第 1 步的第 1 个分支，可以继续搜索，但是发现，没有搜索到合适的叶子结点。
+
+image.png
+
+（3）对第 1 步的第 2 个分支，可以继续搜索，但是同样发现，没有搜索到合适的叶子结点。
+
+image.png
+
+（4）对第 1 步的第 3 个分支，继续搜索发现搜索到合适的叶子结点。
+
+image.png
+
+（5）对第 1 步的第 4 个分支，继续搜索发现搜索到合适的叶子结点。
+
+image.png
+
+因此，used[i - 1] 前面加不加感叹号的区别仅在于保留的是相同元素的顺序索引，还是倒序索引。很明显，顺序索引（即使用 !used[i - 1] 作为剪枝判定条件得到）的递归树剪枝更彻底，思路也相对较自然。
+
+作者：liweiwei1419
+链接：https://leetcode-cn.com/problems/permutations-ii/solution/hui-su-suan-fa-python-dai-ma-java-dai-ma-by-liwe-2/
+来源：力扣（LeetCode）
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
