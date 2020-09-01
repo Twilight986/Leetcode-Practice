@@ -1,0 +1,123 @@
+Given a non-empty string s and a dictionary wordDict containing a list of non-empty words, determine if s can be segmented into a space-separated sequence of one or more dictionary words.
+
+Note:
+
+    The same word in the dictionary may be reused multiple times in the segmentation.
+    You may assume the dictionary does not contain duplicate words.
+
+Example 1:
+
+Input: s = "leetcode", wordDict = ["leet", "code"]
+Output: true
+Explanation: Return true because "leetcode" can be segmented as "leet code".
+
+Example 2:
+
+Input: s = "applepenapple", wordDict = ["apple", "pen"]
+Output: true
+Explanation: Return true because "applepenapple" can be segmented as "apple pen apple".
+             Note that you are allowed to reuse a dictionary word.
+
+Example 3:
+
+Input: s = "catsandog", wordDict = ["cats", "dog", "sand", "and", "cat"]
+Output: false
+
+
+我的答案：
+class Solution {
+    public HashMap<String, Boolean> dic = new HashMap<>();
+    
+    public boolean wordBreak(String s, List<String> wordDict) {
+        for (String str : wordDict) dic.put(str, true);
+        int len = s.length();
+        boolean[] dp = new boolean[len + 1];
+        dp[0] = true;
+        for (int i = 1; i < len + 1; i++){
+            for (int j = i - 1; j >= 0; j--){
+                dp[i] = dp[j] && check(s.substring(j, i));
+                if (dp[i]) break;
+            }
+        }
+        return dp[len];
+    }
+    
+    public boolean check(String str){
+        return dic.getOrDefault(str, false);
+    }
+}
+
+评价：medium
+不用担心在内层loop中会截断前面已经证明存在的单词，因为设置了要求dp[j]也为true，就是说只能在循环到完全包括前面的单词或者完全不包括的时候才能保存为true
+在找到匹配的单词之后，就不再向前循环，并且dp[j]保证了结果的连续性
+
+参考讲解：
+解题思路
+
+动态规划听上去非常高大上，但是其实都是源自于一个很自然的想法，就拿这道题来说，假如需要判断"onetwothreefour"这一个字符串能不能满足条件，我们很自然的想法就是：
+如果"onetwothree"这一段可以拆分，再加上four如果也可以，那不就行了；
+或者
+如果"onetwothre"这一段可以拆分，再加上efour如果也可以，那不就行了；
+这其实已经抓住了动态规划的最核心的东西了，换成式子来表达，就是
+
+dp["onetwothreefour"] = dp["onetwothree"这一段] && 判断一下"four"
+dp["onetwothreefour"] = dp["onetwothre"这一段] && 判断一下"efour"
+
+这道题就搞定啦~
+动态规划的基本操作：
+
+    定义dp数组
+    初始化
+    转化公式
+    搞定！
+
+小窍门
+
+这道题的遍历顺序稍微有点窍门，就是：要判断dp[j]，最好按照 dp[j-1]&&check() -> dp[j-2]&&check -> dp[0]&&check()这个顺序,理由很简单，这样的话check的部分就相当于判断单词是否存在，仔细想想呗~
+代码
+
+class Solution {
+    /*
+        动态规划算法，dp[i]表示s前i个字符能否拆分
+        转移方程：dp[j] = dp[i] && check(s[i+1, j]);
+        check(s[i+1, j])就是判断i+1到j这一段字符是否能够拆分
+        其实，调整遍历顺序，这等价于s[i+1, j]是否是wordDict中的元素
+        这个举个例子就很容易理解。
+        假如wordDict=["apple", "pen", "code"],s = "applepencode";
+        dp[8] = dp[5] + check("pen")
+        翻译一下：前八位能否拆分取决于前五位能否拆分，加上五到八位是否属于字典
+        （注意：i的顺序是从j-1 -> 0哦~
+    */
+
+    public HashMap<String, Boolean> hash = new HashMap<>();
+    public boolean wordBreak(String s, List<String> wordDict) {
+        boolean[] dp = new boolean[s.length()+1];
+        
+        //方便check，构建一个哈希表
+        for(String word : wordDict){
+            hash.put(word, true);
+        }
+
+        //初始化
+        dp[0] = true;
+
+        //遍历
+        for(int j = 1; j <= s.length(); j++){
+            for(int i = j-1; i >= 0; i--){
+                dp[j] = dp[i] && check(s.substring(i, j));
+                if(dp[j])   break;
+            }
+        }
+
+        return dp[s.length()];
+    }
+
+    public boolean check(String s){
+        return hash.getOrDefault(s, false);
+    }
+}
+
+作者：RED_DEVIL
+链接：https://leetcode-cn.com/problems/word-break/solution/dan-ci-chai-fen-ju-jue-zhuang-xcong-jian-dan-de-xi/
+来源：力扣（LeetCode）
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
