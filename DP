@@ -59,6 +59,27 @@ public class Solution {
     }
 }
 
+public class Solution {
+    public int coinChange(int[] coins, int amount) {
+        if (coins == null) return -1;
+        if (amount == 0) return 0;
+        Arrays.sort(coins);
+        int res = amount + 1;
+        return bfs(coins, amount, res, coins.length - 1, 0);
+    }
+    
+    public int bfs(int[] coins, int amount, int res, int depth, int count){
+        if (amount == 0) {
+            return (res > count) ? count : res;  //这里res赋不了值，返回的一直是12，很奇怪
+        }
+        if (depth < 0) return 0;
+        for (int k = amount / coins[depth]; k >= 0 && k + count < res; k--){
+            bfs(coins, amount - coins[depth] * k, res, depth - 1, k + count);
+        }
+        return (res == amount + 1) ? -1 : res;
+    }
+}
+
 评价：medium
 方法2 3不懂
 输入：
