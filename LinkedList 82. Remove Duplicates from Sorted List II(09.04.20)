@@ -1,0 +1,220 @@
+Given a sorted linked list, delete all nodes that have duplicate numbers, leaving only distinct numbers from the original list.
+
+Return the linked list sorted as well.
+
+Example 1:
+
+Input: 1->2->3->3->4->4->5
+Output: 1->2->5
+
+Example 2:
+
+Input: 1->1->1->2->3
+Output: 2->3
+
+
+我的答案：
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+    public ListNode deleteDuplicates(ListNode head) {
+        if (head == null || head.next == null) return head;
+        ListNode result = new ListNode();
+        result.next = head;
+        ListNode p1 = result;
+        ListNode p2 = result.next;
+        while (p2 != null && p2.next != null){
+            if (p1.next.val != p2.next.val) {
+                p1 = p1.next;
+                p2 = p2.next;
+            }else {
+                while (p2 != null && p2.next != null && p2.next.val == p1.next.val) p2 = p2.next;
+                p1.next = p2.next;
+                p2 = p2.next;
+            }
+        }
+        return result.next;
+    }
+}
+
+评价：medium
+注意边界问题
+
+参考讲解：
+解法一
+
+有时候当我们拿到一道题时，如果不能立马想到比较好的解决方案，不妨先用"笨"一点的方式去做一下，"笨"的方案虽然效率不高，但是实现起来简单，也容易想到。为后面再做优化也起到了一个铺垫的效果。
+
+这里要求的是去重，那简单。用一个哈希表记录每个值出现的频率就可以了。
+具体做法如下:
+
+    遍历链表，将每个节点的值放到哈希表中，哈希表的key就是节点的值，value是这个值出现的频率
+    遍历哈希表，将所有频率==1的key放到集合中
+    对集合进行排序
+    遍历集合，然后不断创建新的链表节点
+
+当然这里可以优化一下，比如使用LinkedHashMap或者OrderedDict这样的数据结构，可以省去排序环节。
+
+代码实现:
+
+class Solution {
+    public ListNode deleteDuplicates(ListNode head) {
+        if(head==null || head.next==null) {
+            return head;
+        }
+        //用哈希表记录每个节点值的出现频率
+        HashMap<Integer,Integer> cache = new HashMap<Integer,Integer>();
+        ArrayList<Integer> arr = new ArrayList<Integer>();
+        ListNode p = head;
+        while(p!=null) {
+            int val = p.val;
+            if(cache.containsKey(val)) {
+                cache.put(val,cache.get(val)+1);
+            } else {
+                cache.put(val,1);
+            }
+            p = p.next;
+        }
+        //将所有只出现一次的值放到arr中，之后再对这个arr排序
+        for(Integer k : cache.keySet()) {
+            if(cache.get(k)==1) {
+                arr.add(k);
+            }
+        }
+        Collections.sort(arr);
+        ListNode dummy = new ListNode(-1);
+        p = dummy;
+        //创建长度为arr.length长度的链表，依次将arr中的值赋给每个链表节点
+        for(Integer i : arr) {
+            ListNode tmp = new ListNode(i);
+            p.next = tmp;
+            p = p.next;
+        }
+        return dummy.next;
+    }
+}
+
+解法二
+
+这里我们使用双指针的方式，定义a，b两个指针。
+考虑到一些边界条件，比如1->1->1->2这种情况，需要把开头的几个1给去掉，我们增加一个哑结点，方便边界处理。
+
+初始的两个指针如下:
+
+    将a指针指向哑结点
+    将b指针指向head(哑结点的下一个节点)
+
+如果a指向的值不等于b指向的值，则两个指针都前进一位
+否则，就单独移动b，b不断往前走，直到a指向的值不等于b指向的值。
+
+注意，这里不是直接比较a.val==b.val，这么比较不对，因为初始的时候，a指向的是哑结点，所以比较逻辑应该是这样：
+
+a.next.val == b.next.val
+
+当两个指针指向的值相等时，b不断往前移动，这里是通过一个while循环判断的，因为要过滤掉1->2->2->2->3重复的2。
+那么整个逻辑就是两个while，但时间复杂度不是O(N^2)，而是O(N)，空间上也只是常数级别。
+
+请点击下面幻灯片查看完整的执行过程:
+
+代码实现:
+
+class Solution {
+    public ListNode deleteDuplicates(ListNode head) {
+        if(head==null || head.next==null) {
+            return head;
+        }
+        ListNode dummy = new ListNode(-1);
+        dummy.next = head;
+        ListNode a = dummy;
+        ListNode b = head;
+        while(b!=null && b.next!=null) {
+            //初始化的时a指向的是哑结点，所以比较逻辑应该是a的下一个节点和b的下一个节点
+            if(a.next.val!=b.next.val) {
+                a = a.next;
+                b = b.next;
+            }
+            else {
+                //如果a、b指向的节点值相等，就不断移动b，直到a、b指向的值不相等 
+                while(b!=null && b.next!=null && a.next.val==b.next.val) {
+                    b = b.next;
+                }
+                a.next = b.next;
+                b = b.next;
+            }
+        }
+        return dummy.next;
+    }
+}
+
+解法三
+
+解法三和解法二的代码实现很类似，区别是
+解法二初始化的时候b指针指向的是head
+而解法三初始化的时候b指针指向的是head.next
+
+所以判断两个指针指向的节点值是否相等时，解法三是这么做的:
+
+a.next.val == b.val
+
+当两个指针指向的值不同时，a和b指针都是前移一位
+当两个指针指向的值相同时，解法二和解法三也略有不同
+主要体现在while循环后面的几句
+此外b指针还需要考虑边界条件，当循环结束后b指针可能会指向空，所以不能直接b=b.next，需要判断一下边界，这里请查看代码，并配合动态/静态图方便理解。
+
+时间复杂度和空间复杂度，解法二和解法三都是一样的。
+
+请点击下面幻灯片查看完整的执行过程:
+
+代码实现中还有一个小细节，外层的while是这么写的
+
+while(b!=null)
+
+如果写成
+
+while(b!=null && b.next!=null)
+
+这就不对了，没法处理1->1这种情况。
+
+代码实现:
+
+class Solution {
+    public ListNode deleteDuplicates(ListNode head) {
+        if(head==null || head.next==null) {
+            return head;
+        }
+        ListNode dummy = new ListNode(-1);
+        dummy.next = head;
+        ListNode a = dummy;
+        ListNode b = head.next;
+        while(b!=null) {
+            if(a.next.val!=b.val) {
+                a = a.next;
+                b = b.next;
+            }
+            else {
+                while(b!=null && a.next.val==b.val) {
+                    b = b.next;
+                }
+                //这里的去重跟解法二有点差别，解法二的是
+                //a.next = b.next
+                a.next = b;
+                //b指针在while中判断完后，可能指向了null，这里需要处理边界问题
+                b = (b==null) ? null : b.next;
+            }
+        }
+        return dummy.next;
+    }
+}
+
+作者：wang_ni_ma
+链接：https://leetcode-cn.com/problems/remove-duplicates-from-sorted-list-ii/solution/san-chong-jie-fa-duo-tu-zhan-shi-82-shan-chu-pai-x/
+来源：力扣（LeetCode）
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
