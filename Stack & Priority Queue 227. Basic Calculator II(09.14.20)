@@ -1,0 +1,129 @@
+Implement a basic calculator to evaluate a simple expression string.
+
+The expression string contains only non-negative integers, +, -, *, / operators and empty spaces . The integer division should truncate toward zero.
+
+Example 1:
+
+Input: "3+2*2"
+Output: 7
+
+Example 2:
+
+Input: " 3/2 "
+Output: 1
+
+Example 3:
+
+Input: " 3+5 / 2 "
+Output: 5
+
+Note:
+
+    You may assume that the given expression is always valid.
+    Do not use the eval built-in library function.
+
+
+我的答案：
+class Solution {
+    public int calculate(String s) {
+        return eval(transform(s));
+    }
+    
+    public LinkedList<String> transform(String exp){
+        Stack<String> stack = new Stack<>();
+        LinkedList<String> tempExp = new LinkedList<>();
+        for (int i = 0; i < exp.length(); i++){
+            if (Character.isDigit(exp.charAt(i))) {
+                int k = i + 1;
+                for (; k < exp.length() && Character.isDigit(exp.charAt(k)); k++){
+                    
+                }
+                tempExp.add(exp.substring(i, k));
+                i = k - 1;
+                continue;
+            } else if (exp.charAt(i) == '*' || exp.charAt(i) == '/'){
+                while (!stack.isEmpty() && (stack.lastElement().equals("*") || stack.lastElement().equals("/"))) {
+                    tempExp.add(stack.pop());
+                }
+                stack.add(String.valueOf(exp.charAt(i)));
+                continue;
+            } else if (exp.charAt(i) == '+' || exp.charAt(i) == '-'){
+                while (!stack.isEmpty() && !isNumeric(stack.lastElement())) tempExp.add(stack.pop());
+                stack.add(String.valueOf(exp.charAt(i)));
+                continue;
+            }
+        }
+        while (!stack.isEmpty()) tempExp.add(stack.pop());
+        return tempExp;
+    }
+    
+    public int eval(LinkedList<String> tempExp){
+        Stack<Integer> stack = new Stack<>();
+        for (String s : tempExp){
+            if (isNumeric(s)){
+                stack.push(Integer.valueOf(s));
+                continue;
+            } else{
+                int a = stack.pop();
+                int b = stack.pop();
+                switch(s.toCharArray()[0]){
+                    case '+':
+                        stack.push(b + a);
+                        continue;
+                    case '-':
+                        stack.push(b - a);
+                        continue;
+                    case '*':
+                        stack.push(b * a);
+                        continue;
+                    case '/' :
+                        stack.push(b / a);
+                        continue;
+                }
+            }
+        }
+        return stack.pop();
+    }
+    
+    public boolean isNumeric(String s){
+        for (int i = 0; i < s.length(); i++){
+            if (!Character.isDigit(s.charAt(i))) return false;
+        }
+        return true;
+    }
+}
+
+评价：medium
+注意事项：
+在stack中有自己添加元素的方法push();但是在操作过程中发现，add()同样可以添加元素至stack
+
+那这两个方法有什么不同呢？
+
+stack本身没有add()方法，但是继承的类vector有add方法同样vector的父类和实现接口List同样有add()方法。
+
+1.返回值
+
+push()方法返回值描述：
+Returns:theitem argument
+
+        而add()方法的返回值描述：
+
+Returns:true (as specified byCollection.add)，也就是会返回true 或者false。2.插入目标位置push()方法的插入位置：Pushes an item onto thetop of this stack. add方法插入位置：Appends the specified element to theend of this Vector.可以很明显的看到在插入位置上，push方法插入stack的顶端，而add方法是插入在vector的底端，这里有个逻辑反转的问题：因为vector和stack的实现方式同样是数组，所以在stack的add()类似与添加在数组的底端，stack的出入策略是后进先出，也就是vector的底也就是stack顶部。贴出自己测试代码：
+
+这里还有一个addElement()和add()方法的区别？
+
+这两个方法最大的区别就是返回值不一样，在作用上基本没有区别。 add是实现List接口重写的方法，返回值为boolean。 addElement是Vector类中的特有方法，返回值是void。（粘贴自百度，认同
+
+Stack.peek()与Stack.pop()﻿﻿
+
+peek()：返回栈顶的值 ；不改变栈的值，查看栈顶的对象而不移除它。
+
+pop()：返回栈顶的值 ；会把栈顶的值删除。
+
+
+
+poll与pop
+
+poll：Queue(队列)的一个方法，获取并移除此队列的头，如果此队列为空，则返回null。
+pop：Stack(栈)的方法，移除堆栈顶部的对象，并作为此函数的值返回该对象 。
+
